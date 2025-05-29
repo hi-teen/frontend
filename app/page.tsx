@@ -123,7 +123,7 @@ export default function Home() {
           </div>
         </div>
         <span className='text-sm text-[#525252] font-semibold translate-y-2.5 -translate-x-2 block'>
-          이번주 급식표
+          이번달 급식표
         </span>
       </div>
       <div className='space-y-3 pl-4'>
@@ -138,6 +138,7 @@ export default function Home() {
       </div>
       <div className='flex justify-center gap-1 mt-4'>
         <span className='w-2 h-2 rounded-full bg-[#5A8FFF] opacity-60' />
+        <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
         <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
         <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
         <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
@@ -183,9 +184,6 @@ export default function Home() {
       </button>
     );
   })}
-  <button className='text-[#417EFF] text-sm font-semibold whitespace-nowrap'>
-    더 보기 &gt;
-  </button>
 </div>
 
         <div className='bg-white rounded-xl p-4 space-y-4'>

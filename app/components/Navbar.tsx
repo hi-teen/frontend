@@ -15,9 +15,9 @@ export default function Navbar() {
 
   const navItems = [
     { name: "홈", href: "/", icon: HomeIcon },
+    { name: "게시판", href: "/meal", icon: Bars3Icon },
     { name: "채팅", href: "/messages", icon: ChatBubbleLeftIcon },
     { name: "시간표", href: "/schedule", icon: CalendarIcon },
-    { name: "급식표", href: "/meal", icon: Bars3Icon },
     { name: "프로필", href: "/profile", icon: UserIcon },
   ];
 
