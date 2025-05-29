@@ -51,101 +51,103 @@ export default function Home() {
   return (
     <main className='pb-16 max-w-lg mx-auto'>
       {/* 상단 헤더 */}
-<header className='px-4 pt-5 pb-3 flex justify-between items-start bg-transparent sticky top-0 z-50'>
-  <div className='flex flex-col'>
-    <Link href='/'>
-      <Image
-        src='/hiteen.svg'
-        alt='HiTeen 로고'
-        width={72}
-        height={24}
-        className='object-contain'
-        priority
-        style={{ display: 'block' }}
-      />
-    </Link>
-    <span className='text-xl font-bold text-black mt-1'>한국고등학교</span>
-  </div>
-  <div className='flex items-center gap-4 mt-3'>
-    <button>
-      <svg
-        xmlns='http://www.w3.org/2000/svg'
-        fill='none'
-        viewBox='0 0 24 24'
-        strokeWidth={1.5}
-        stroke='currentColor'
-        className='w-6 h-6 text-gray-400'
-      >
-        <path
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          d='M12 4.5v15m7.5-7.5h-15'
-        />
-      </svg>
-    </button>
-    <button>
-      <MagnifyingGlassIcon className='w-6 h-6 text-gray-400' />
-    </button>
-    <button className='relative'>
-      <BellIcon className='w-6 h-6 text-gray-400' />
-      <span className='absolute -top-1 -right-1 bg-blue-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center'>
-        6
-      </span>
-    </button>
-    {/* <Link href='/profile'>
-      <div className='w-8 h-8 bg-hiteen-pink-100 rounded-full' />
-    </Link> */}
-  </div>
-</header>
+      <header className='px-4 pt-5 pb-3 flex justify-between items-start bg-gray-50 sticky top-0 z-50'>
+       <div className='flex flex-col'>
+          <Link href='/'>
+            <Image
+              src='/hiteen.svg'
+              alt='HiTeen 로고'
+              width={72}
+              height={24}
+              className='object-contain'
+              priority
+              style={{ display: 'block' }}
+            />
+          </Link>
+          <span className='text-xl font-bold text-black mt-1'>한국고등학교</span>
+        </div>
+        <div className='flex items-center gap-4 mt-3'>
+          <button>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              strokeWidth={1.5}
+              stroke='currentColor'
+              className='w-6 h-6 text-gray-400'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M12 4.5v15m7.5-7.5h-15'
+              />
+            </svg>
+          </button>
+          <button>
+            <MagnifyingGlassIcon className='w-6 h-6 text-gray-400' />
+          </button>
+          <button className='relative'>
+            <BellIcon className='w-6 h-6 text-gray-400' />
+            <span className='absolute -top-1 -right-1 bg-blue-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center'>
+              6
+            </span>
+          </button>
+          {/* <Link href='/profile'>
+            <div className='w-8 h-8 bg-hiteen-pink-100 rounded-full' />
+          </Link> */}
+        </div>
+      </header>
 
       {/* 공지사항 배너 */}
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 p-4'>
-        <Link
-          href='/timetable'
-          className='bg-hiteen-pink-50 p-4 rounded-lg block'
-        >
-          <div className='flex justify-between items-start mb-3'>
+        {/* 오늘의 급식 카드 */}
+        <div className='bg-white border-[1.5px] border-[#E9F0FF] p-4 rounded-xl'>
+        <div className='flex justify-between items-start mb-4'>
+          <div className='flex items-center gap-2'>
+            <Image
+              src='/lunchbox.png'
+              alt='급식 아이콘'
+              width={40}
+              height={40}
+            />
             <div>
-              <h3 className='font-bold'>오늘의 급식</h3>
-              <p className='text-xs text-gray-500 mt-1'>{formattedDate}</p>
-            </div>
-            <div className='flex justify-between items-center mb-2'>
-              <Link
-                href='/meal'
-                className='text-sm text-gray-500 hover:text-gray-700'
-              >
-                전체 급식표
-              </Link>
+              <h3 className='text-lg font-bold'>오늘의 급식</h3>
+              <p className='text-xs text-gray-500 mt-0.5'>{formattedDate}</p>
             </div>
           </div>
-          <div className='space-y-2'>
-            <div>
-              <span className='text-xs text-hiteen-pink-400 bg-hiteen-pink-100 px-2 py-0.5 rounded-full'>
-                점심
-              </span>
-              <p className='text-sm text-gray-600 mt-1 line-clamp-2'>
-                {todayMeals.lunch.join(", ")}
-              </p>
-            </div>
-            <div>
-              <span className='text-xs text-hiteen-pink-400 bg-hiteen-pink-100 px-2 py-0.5 rounded-full'>
-                저녁
-              </span>
-              <p className='text-sm text-gray-600 mt-1 line-clamp-2'>
-                {todayMeals.dinner.join(", ")}
-              </p>
-            </div>
-          </div>
-        </Link>
-        <div className='bg-hiteen-pink-50 p-4 rounded-lg'>
-          <h3 className='font-bold mb-1'>뇌피셜 보고서 1호</h3>
-          <p className='text-sm text-gray-600 line-clamp-2'>
-            선생님이 내 이름을 알고 있다
-          </p>
-          <button className='text-sm text-hiteen-pink-400 mt-2'>
-            자세히 &gt;
-          </button>
+          {/* <Link href='/meal'> */}
+          <span className='text-sm text-[#525252] font-semibold translate-y-2.5 -translate-x-2 block'>
+            이번주 급식표
+          </span>
+          {/* </Link> */}
         </div>
+
+        <div className='space-y-3 pl-4'>
+          <div>
+            <span className='text-xs font-semibold text-[#2E71FF] border border-[#2E71FF] bg-white px-3 py-1 rounded-md inline-block'>
+              중식
+            </span>
+            <p className='text-sm text-gray-800 mt-2 font-semibold'>
+              {todayMeals.lunch.join(", ")}
+            </p>
+          </div>
+          <div>
+            <span className='text-xs font-semibold text-[#2E71FF] border border-[#2E71FF] bg-white px-3 py-1 rounded-md inline-block mt-1'>
+              석식
+            </span>
+            <p className='text-sm text-gray-800 mt-2 font-semibold'>
+              {todayMeals.dinner.join(", ")}
+            </p>
+          </div>
+        </div>
+
+        <div className='flex justify-center gap-1 mt-4'>
+          <span className='w-2 h-2 rounded-full bg-[#5A8FFF] opacity-60' />
+          <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
+          <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
+          <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
+        </div>
+      </div>
       </div>
 
       {/* 퀵 메뉴 */}
