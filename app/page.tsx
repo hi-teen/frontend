@@ -51,37 +51,52 @@ export default function Home() {
   return (
     <main className='pb-16 max-w-lg mx-auto'>
       {/* 상단 헤더 */}
-      <header className='px-4 py-3 flex justify-between items-center bg-white sticky top-0 z-50 border-b'>
-        <div className='flex items-center gap-2'>
-          <Link href='/'>
-            <Image
-              src='/logo.png'
-              alt='하이틴고 로고'
-              width={32}
-              height={32}
-              className='object-contain'
-            />
-          </Link>
-          <div className='flex flex-col'>
-            <span className='text-sm font-medium'>서울고등학교</span>
-            <span className='text-xs text-gray-500'>2학년 3반</span>
-          </div>
-        </div>
-        <div className='flex items-center gap-4'>
-          <button>
-            <MagnifyingGlassIcon className='w-6 h-6 text-hiteen-pink-400' />
-          </button>
-          <button className='relative'>
-            <BellIcon className='w-6 h-6 text-hiteen-pink-400' />
-            <span className='absolute -top-1 -right-1 bg-hiteen-pink-400 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center'>
-              2
-            </span>
-          </button>
-          <Link href='/profile'>
-            <div className='w-8 h-8 bg-hiteen-pink-100 rounded-full' />
-          </Link>
-        </div>
-      </header>
+<header className='px-4 pt-5 pb-3 flex justify-between items-start bg-transparent sticky top-0 z-50'>
+  <div className='flex flex-col'>
+    <Link href='/'>
+      <Image
+        src='/hiteen.svg'
+        alt='HiTeen 로고'
+        width={72}
+        height={24}
+        className='object-contain'
+        priority
+        style={{ display: 'block' }}
+      />
+    </Link>
+    <span className='text-xl font-bold text-black mt-1'>한국고등학교</span>
+  </div>
+  <div className='flex items-center gap-4 mt-3'>
+    <button>
+      <svg
+        xmlns='http://www.w3.org/2000/svg'
+        fill='none'
+        viewBox='0 0 24 24'
+        strokeWidth={1.5}
+        stroke='currentColor'
+        className='w-6 h-6 text-gray-400'
+      >
+        <path
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          d='M12 4.5v15m7.5-7.5h-15'
+        />
+      </svg>
+    </button>
+    <button>
+      <MagnifyingGlassIcon className='w-6 h-6 text-gray-400' />
+    </button>
+    <button className='relative'>
+      <BellIcon className='w-6 h-6 text-gray-400' />
+      <span className='absolute -top-1 -right-1 bg-blue-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center'>
+        6
+      </span>
+    </button>
+    {/* <Link href='/profile'>
+      <div className='w-8 h-8 bg-hiteen-pink-100 rounded-full' />
+    </Link> */}
+  </div>
+</header>
 
       {/* 공지사항 배너 */}
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 p-4'>
