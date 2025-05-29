@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { format } from "date-fns";
@@ -15,9 +16,24 @@ import {
   FireIcon,
 } from "@heroicons/react/24/outline";
 
+const boards = [
+  { key: 'free', label: '자유게시판', icon: '/smile.png' },
+  { key: 'secret', label: '비밀게시판', icon: '/secret.png' },
+  { key: 'info', label: '정보게시판', icon: '/light.png' },
+  { key: '1st', label: '1학년게시판', icon: '/first.png' },
+];
+
+const posts = [
+  { id: 1, title: '종강 6월 16일인가요?', likes: 1, comments: 13 },
+  { id: 2, title: '종강 6월 16일인가요?', likes: 1, comments: 13 },
+  { id: 3, title: '종강 6월 16일인가요?', likes: 1, comments: 13 },
+  { id: 4, title: '종강 6월 16일인가요?', likes: 1, comments: 13 },
+];
+
 export default function Home() {
   const today = new Date();
   const formattedDate = format(today, "M월 d일 (EEEE)", { locale: ko });
+  const [selected, setSelected] = useState("free");
 
   const todayMeals = {
     lunch: ["백미밥", "된장국", "돈까스", "양배추샐러드", "깍두기", "딸기"],
@@ -52,7 +68,7 @@ export default function Home() {
     <main className='pb-16 max-w-lg mx-auto'>
       {/* 상단 헤더 */}
       <header className='px-4 pt-5 pb-3 flex justify-between items-start bg-gray-50 sticky top-0 z-50'>
-       <div className='flex flex-col'>
+        <div className='flex flex-col'>
           <Link href='/'>
             <Image
               src='/hiteen.svg'
@@ -92,125 +108,69 @@ export default function Home() {
               6
             </span>
           </button>
-          {/* <Link href='/profile'>
-            <div className='w-8 h-8 bg-hiteen-pink-100 rounded-full' />
-          </Link> */}
         </div>
       </header>
 
-      {/* 공지사항 배너 */}
+      {/* 오늘의 급식 카드 */}
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 p-4'>
-        {/* 오늘의 급식 카드 */}
         <div className='bg-white border-[1.5px] border-[#E9F0FF] p-4 rounded-xl'>
-        <div className='flex justify-between items-start mb-4'>
-          <div className='flex items-center gap-2'>
-            <Image
-              src='/lunchbox.png'
-              alt='급식 아이콘'
-              width={40}
-              height={40}
-            />
+          <div className='flex justify-between items-start mb-4'>
+            <div className='flex items-center gap-2'>
+              <Image src='/lunchbox.png' alt='급식 아이콘' width={40} height={40} />
+              <div>
+                <h3 className='text-lg font-bold'>오늘의 급식</h3>
+                <p className='text-xs text-gray-500 mt-0.5'>{formattedDate}</p>
+              </div>
+            </div>
+            <span className='text-sm text-[#525252] font-semibold translate-y-2.5 -translate-x-2 block'>
+              이번주 급식표
+            </span>
+          </div>
+          <div className='space-y-3 pl-4'>
             <div>
-              <h3 className='text-lg font-bold'>오늘의 급식</h3>
-              <p className='text-xs text-gray-500 mt-0.5'>{formattedDate}</p>
+              <span className='text-xs font-semibold text-[#2E71FF] border border-[#2E71FF] bg-white px-3 py-1 rounded-md inline-block mb-1'>중식</span>
+              <p className='text-sm text-gray-800 mt-1 font-semibold'>{todayMeals.lunch.join(", ")}</p>
+            </div>
+            <div>
+              <span className='text-xs font-semibold text-[#2E71FF] border border-[#2E71FF] bg-white px-3 py-1 rounded-md inline-block mb-1 mt-1'>석식</span>
+              <p className='text-sm text-gray-800 mt-1 font-semibold'>{todayMeals.dinner.join(", ")}</p>
             </div>
           </div>
-          {/* <Link href='/meal'> */}
-          <span className='text-sm text-[#525252] font-semibold translate-y-2.5 -translate-x-2 block'>
-            이번주 급식표
-          </span>
-          {/* </Link> */}
-        </div>
-
-        <div className='space-y-3 pl-4'>
-          <div>
-            <span className='text-xs font-semibold text-[#2E71FF] border border-[#2E71FF] bg-white px-3 py-1 rounded-md inline-block'>
-              중식
-            </span>
-            <p className='text-sm text-gray-800 mt-2 font-semibold'>
-              {todayMeals.lunch.join(", ")}
-            </p>
-          </div>
-          <div>
-            <span className='text-xs font-semibold text-[#2E71FF] border border-[#2E71FF] bg-white px-3 py-1 rounded-md inline-block mt-1'>
-              석식
-            </span>
-            <p className='text-sm text-gray-800 mt-2 font-semibold'>
-              {todayMeals.dinner.join(", ")}
-            </p>
+          <div className='flex justify-center gap-1 mt-4'>
+            <span className='w-2 h-2 rounded-full bg-[#5A8FFF] opacity-60' />
+            <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
+            <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
+            <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
           </div>
         </div>
-
-        <div className='flex justify-center gap-1 mt-4'>
-          <span className='w-2 h-2 rounded-full bg-[#5A8FFF] opacity-60' />
-          <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
-          <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
-          <span className='w-2 h-2 rounded-full bg-[#D9D9D9]' />
-        </div>
-      </div>
       </div>
 
       {/* 퀵 메뉴 */}
       <div className='grid grid-cols-5 gap-2 px-4 py-6 overflow-x-auto hide-scrollbar'>
-        <button className='flex flex-col items-center gap-1 min-w-[4rem]'>
-          <div className='w-12 h-12 bg-hiteen-pink-100 rounded-lg flex items-center justify-center'>
-            <HomeIcon className='w-6 h-6 text-hiteen-pink-400' />
-          </div>
-          <span className='text-xs whitespace-nowrap'>학교 홈</span>
-        </button>
-        <button className='flex flex-col items-center gap-1 min-w-[4rem]'>
-          <div className='w-12 h-12 bg-hiteen-pink-100 rounded-lg flex items-center justify-center'>
-            <TruckIcon className='w-6 h-6 text-hiteen-pink-400' />
-          </div>
-          <span className='text-xs whitespace-nowrap'>셔틀버스</span>
-        </button>
-        <button className='flex flex-col items-center gap-1 min-w-[4rem]'>
-          <div className='w-12 h-12 bg-hiteen-pink-100 rounded-lg flex items-center justify-center'>
-            <DocumentTextIcon className='w-6 h-6 text-hiteen-pink-400' />
-          </div>
-          <span className='text-xs whitespace-nowrap'>학사공지</span>
-        </button>
-        <button className='flex flex-col items-center gap-1 min-w-[4rem]'>
-          <div className='w-12 h-12 bg-hiteen-pink-100 rounded-lg flex items-center justify-center'>
-            <CalendarIcon className='w-6 h-6 text-hiteen-pink-400' />
-          </div>
-          <span className='text-xs whitespace-nowrap'>학사일정</span>
-        </button>
-        <button className='flex flex-col items-center gap-1 min-w-[4rem]'>
-          <div className='w-12 h-12 bg-hiteen-pink-100 rounded-lg flex items-center justify-center'>
-            <BookOpenIcon className='w-6 h-6 text-hiteen-pink-400' />
-          </div>
-          <span className='text-xs whitespace-nowrap'>도서관</span>
-        </button>
+        {[
+          { src: '/homeicon.png', label: '학교 홈' },
+          { src: '/announcement.png', label: '학사공지' },
+          { src: '/library.png', label: '도서관' },
+          { src: '/bus.png', label: '셔틀버스' },
+          { src: '/schedule.png', label: '학사일정' },
+        ].map(({ src, label }) => (
+          <button key={label} className='flex flex-col items-center gap-1 min-w-[4rem]'>
+            <div className='w-[72px] h-[72px] bg-[#E9F0FF] rounded-[10px] flex items-center justify-center'>
+              <Image src={src} alt={label} width={44} height={44} />
+            </div>
+            <span className='text-xs text-[#656565] font-semibold whitespace-nowrap'>{label}</span>
+          </button>
+        ))}
       </div>
 
-      {/* 광고 배너 */}
-      <div className='bg-hiteen-pink-50 mx-4 rounded-lg p-4 mb-6'>
-        <div className='flex items-center gap-4'>
-          <div className='w-16 h-16 sm:w-20 sm:h-20 bg-hiteen-pink-100 rounded flex items-center justify-center flex-shrink-0'>
-            <span className='text-hiteen-pink-400 font-bold'>AD</span>
-          </div>
-          <div className='min-w-0'>
-            <h3 className='font-bold text-base sm:text-lg truncate'>
-              낭코대전쟁 1억 다운로드
-            </h3>
-            <p className='text-sm line-clamp-2'>
-              돌파 기념 이벤트 개최 중이다냥!
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 핫게시물 */}
+      {/* 핫 게시물 */}
       <div className='px-4 mb-8'>
         <div className='flex justify-between items-center mb-4'>
           <div className='flex items-center gap-2'>
             <FireIcon className='w-5 h-5 text-hiteen-pink-400' />
             <h2 className='text-lg font-bold'>HOT 게시물</h2>
           </div>
-          <button className='text-hiteen-pink-400 whitespace-nowrap'>
-            더 보기 &gt;
-          </button>
+          <button className='text-hiteen-pink-400 whitespace-nowrap'>더 보기 &gt;</button>
         </div>
         <div className='space-y-4'>
           {hotPosts.map((post) => (
@@ -232,64 +192,50 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 게시판 목록 */}
+      {/* 즐겨찾는 게시판 */}
       <div className='px-4 pb-4'>
-        <div className='flex justify-between items-center mb-4'>
-          <h2 className='text-lg font-bold'>즐겨찾는 게시판</h2>
-          <button className='text-hiteen-pink-400 whitespace-nowrap'>
-            더 보기 &gt;
-          </button>
+        <div className='flex justify-between items-center mb-3'>
+          <h2 className='text-xl font-bold'>즐겨찾는 게시판</h2>
         </div>
-        <div className='space-y-4'>
-          <Link
-            href='/board/free'
-            className='flex justify-between items-center py-2 border-b'
-          >
-            <span>자유게시판</span>
-            <span className='text-hiteen-pink-400 text-sm'>N</span>
-          </Link>
-          <Link
-            href='/board/secret'
-            className='flex justify-between items-center py-2 border-b'
-          >
-            <span>비밀게시판</span>
-            <span className='text-sm'>23</span>
-          </Link>
-          <Link
-            href='/board/1st'
-            className='flex justify-between items-center py-2 border-b'
-          >
-            <span>1학년 게시판</span>
-            <span className='text-hiteen-pink-400 text-sm'>N</span>
-          </Link>
-          <Link
-            href='/board/2nd'
-            className='flex justify-between items-center py-2 border-b'
-          >
-            <span>2학년 게시판</span>
-            <span className='text-sm'>19</span>
-          </Link>
-          <Link
-            href='/board/3rd'
-            className='flex justify-between items-center py-2 border-b'
-          >
-            <span>3학년 게시판</span>
-            <span className='text-hiteen-pink-400 text-sm'>N</span>
-          </Link>
-          <Link
-            href='/board/exam'
-            className='flex justify-between items-center py-2 border-b'
-          >
-            <span>시험정보</span>
-            <span className='text-hiteen-pink-400 text-sm'>N</span>
-          </Link>
-          <Link
-            href='/board/market'
-            className='flex justify-between items-center py-2 border-b'
-          >
-            <span>장터게시판</span>
-            <span className='text-hiteen-pink-400 text-sm'>N</span>
-          </Link>
+        <div className='flex items-center gap-2 mb-4 flex-wrap'>
+  {boards.map((board) => {
+    const isActive = selected === board.key;
+    return (
+      <button
+        key={board.key}
+        onClick={() => setSelected(board.key)}
+        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition
+          ${isActive ? 'border-[#417EFF] text-[#417EFF]' : 'border-[#A2A2A2] text-[#A2A2A2]'} bg-white`}
+      >
+        <Image src={board.icon} alt={board.label} width={16} height={16} />
+        {board.label}
+      </button>
+    );
+  })}
+  <button className='text-[#417EFF] text-sm font-semibold whitespace-nowrap'>
+    더 보기 &gt;
+  </button>
+</div>
+
+        <div className='bg-white rounded-xl p-4 space-y-4'>
+          {posts.map((post) => (
+            <div
+              key={post.id}
+              className='flex justify-between items-center text-sm text-[#3D3D3D]'
+            >
+              <p className='truncate'>{post.title}</p>
+              <div className='flex items-center gap-3 text-xs text-gray-500 flex-shrink-0'>
+                <div className='flex items-center gap-1'>
+                  <Image src='/heart.png' alt='like' width={14} height={14} />
+                  {post.likes}
+                </div>
+                <div className='flex items-center gap-1'>
+                  <Image src='/bubble.png' alt='comment' width={14} height={14} />
+                  {post.comments}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </main>
