@@ -163,35 +163,6 @@ export default function Home() {
         ))}
       </div>
 
-      {/* 핫 게시물 */}
-      <div className='px-4 mb-8'>
-        <div className='flex justify-between items-center mb-4'>
-          <div className='flex items-center gap-2'>
-            <FireIcon className='w-5 h-5 text-hiteen-pink-400' />
-            <h2 className='text-lg font-bold'>HOT 게시물</h2>
-          </div>
-          <button className='text-hiteen-pink-400 whitespace-nowrap'>더 보기 &gt;</button>
-        </div>
-        <div className='space-y-4'>
-          {hotPosts.map((post) => (
-            <div key={post.id} className='bg-white p-4 rounded-lg shadow-sm'>
-              <div className='flex justify-between items-start gap-4'>
-                <div className='min-w-0'>
-                  <span className='text-xs text-hiteen-pink-400 bg-hiteen-pink-100 px-2 py-0.5 rounded-full inline-block mb-2'>
-                    {post.board}
-                  </span>
-                  <h3 className='font-medium truncate'>{post.title}</h3>
-                </div>
-                <div className='text-xs text-gray-500 space-y-1 text-right flex-shrink-0'>
-                  <p>👍 {post.likes}</p>
-                  <p>💬 {post.comments}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* 즐겨찾는 게시판 */}
       <div className='px-4 pb-4'>
         <div className='flex justify-between items-center mb-3'>
@@ -238,6 +209,60 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* 핫 게시물 */}
+      <div className='px-4 mb-8'>
+        <div className='flex justify-between items-center mt-2 mb-4'>
+          <h2 className='text-xl font-bold'>HOT 게시물</h2>
+          <button className='text-[#417EFF] text-sm font-semibold whitespace-nowrap'>
+            더 보기 &gt;
+          </button>
+        </div>
+
+        <div className='space-y-4'>
+          {[1, 2].map((_, idx) => (
+            <div
+              key={idx}
+              className='bg-white rounded-2xl px-4 py-3 flex justify-between shadow-sm'
+            >
+              {/* 왼쪽 콘텐츠 */}
+              <div className='min-w-0 flex flex-col justify-between'>
+                <div>
+                  <span className='text-[10px] font-semibold text-[#5D91FF] bg-[#E9F0FF] px-2.5 py-1 rounded-full inline-block mb-2'>
+                    자유게시판
+                  </span>
+                  <h3 className='text-base font-semibold text-black mb-1 truncate'>
+                    기말고사 시험 범위 정리
+                  </h3>
+                  <p className='text-xs text-[#8D8D8D] truncate'>
+                    기말고사 시험범위 딱 정리해준다. 수학 어쩌구 영어 어쩌구...
+                  </p>
+                </div>
+              </div>
+
+              {/* 오른쪽 아이콘 */}
+              <div className='flex flex-col items-end justify-end min-w-[72px] ml-4'>
+                <span className='text-[11px] text-[#8D8D8D] mb-2'>5일 전</span>
+                <div className='flex gap-2 items-center'>
+                  <div className='flex items-center gap-1'>
+                    <Image src='/heart.png' alt='like' width={14} height={14} />
+                    <span className='text-xs text-[#8D8D8D]'>50</span>
+                  </div>
+                  <div className='flex items-center gap-1'>
+                    <Image src='/bubble.png' alt='comment' width={14} height={14} />
+                    <span className='text-xs text-[#8D8D8D]'>27</span>
+                  </div>
+                  <div className='flex items-center gap-1'>
+                    <Image src='/eye.png' alt='view' width={14} height={14} />
+                    <span className='text-xs text-[#8D8D8D]'>132</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </main>
   );
 }
