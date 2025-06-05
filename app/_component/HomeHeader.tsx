@@ -1,7 +1,11 @@
 'use client';
 import Link from "next/link";
 import Image from "next/image";
-import { MagnifyingGlassIcon, BellIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  BellIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline";
 
 export default function HomeHeader() {
   return (
@@ -12,7 +16,11 @@ export default function HomeHeader() {
         </Link>
         <span className='text-xl font-bold mt-1'>한국고등학교</span>
       </div>
+
       <div className='flex items-center gap-4 mt-3'>
+        <button>
+          <PlusIcon className='w-6 h-6 text-gray-400' />
+        </button>
         <button>
           <MagnifyingGlassIcon className='w-6 h-6 text-gray-400' />
         </button>

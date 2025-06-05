@@ -7,7 +7,7 @@ import {
   ChatBubbleLeftIcon,
   CalendarIcon,
   UserIcon,
-  Bars3Icon, // 급식표용 임시 아이콘
+  ClipboardIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Navbar() {
@@ -15,7 +15,7 @@ export default function Navbar() {
 
   const navItems = [
     { name: "홈", href: "/", icon: HomeIcon },
-    { name: "게시판", href: "/meal", icon: Bars3Icon },
+    { name: "게시판", href: "/board", icon: ClipboardIcon },
     { name: "채팅", href: "/messages", icon: ChatBubbleLeftIcon },
     { name: "시간표", href: "/schedule", icon: CalendarIcon },
     { name: "프로필", href: "/profile", icon: UserIcon },
