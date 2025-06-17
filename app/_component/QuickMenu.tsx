@@ -14,13 +14,13 @@ export default function QuickMenu() {
       </button>
 
       {/* 다음 수업 위젯 */}
-      <div className='flex-1 bg-white rounded-2xl shadow px-4 py-3 min-w-[200px]'>
-        <p className='text-sm text-gray-600 font-semibold mb-1'>다음 수업</p>
-        <div className='flex justify-between items-center'>
-          <span className='text-base font-bold text-[#2269FF]'>수학</span>
-          <span className='text-xs text-gray-400'>3교시 · 10:40</span>
-        </div>
-      </div>
+    <div className='flex-1 bg-[#E9F0FF] rounded-[10px] px-4 py-3 flex flex-col justify-between h-[72px]'>
+    <span className='text-xs text-[#656565] font-semibold mb-1'>다음 수업</span>
+    <div className='flex justify-between items-end flex-1'>
+        <span className='text-lg font-bold text-[#2269FF]'>수학</span>
+        <span className='text-xs text-gray-500'>3교시 · 10:40</span>
+    </div>
+    </div>
     </div>
   );
 }

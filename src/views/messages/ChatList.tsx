@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { UserIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 const chatRooms = [
   {
@@ -30,11 +30,17 @@ export default function ChatList() {
           href={`/messages/${chat.id}`}
           className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-200 hover:bg-gray-50 transition"
         >
-          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-            <UserIcon className="w-6 h-6 text-gray-400" />
+          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden">
+            <Image
+              src="/usericon.png"
+              alt="User Icon"
+              width={28}
+              height={28}
+              className="object-cover"
+            />
           </div>
           <div>
-            <p className="font-semibold text-sm">{chat.title}</p>
+            <p className="font-semibold text-base">{chat.title}</p>
             <p className="text-sm text-gray-500">{chat.preview}</p>
           </div>
         </Link>

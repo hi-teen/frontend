@@ -3,19 +3,28 @@
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeftIcon,
-  Bars3Icon,
-  UserIcon,
 } from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import { useState } from 'react';
 
 export default function ChatDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id;
 
+  const [message, setMessage] = useState('');
+
+  const handleSend = () => {
+    if (message.trim()) {
+      console.log('전송:', message);
+      setMessage('');
+    }
+  };
+
   return (
-    <div className="max-w-lg mx-auto min-h-screen bg-[#f8f8f8] px-4 pt-4 pb-20 relative">
+    <div className="max-w-lg mx-auto h-screen flex flex-col bg-[#f8f8f8] 70px]">
       {/* 상단 바 */}
-      <div className="flex justify-between items-center mb-2">
+      <div className="px-4 pt-4 flex justify-between items-center mb-2">
         <button onClick={() => router.push('/messages')}>
           <ArrowLeftIcon className="w-5 h-5 text-gray-400" />
         </button>
@@ -27,7 +36,7 @@ export default function ChatDetailPage() {
       </div>
 
       {/* 게시글 정보 */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 text-sm mb-4">
+      <div className="mx-4 bg-white rounded-2xl border border-gray-200 p-4 text-sm mb-4">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">🙊 비밀게시판</span>
         </div>
@@ -38,10 +47,10 @@ export default function ChatDetailPage() {
       </div>
 
       {/* 메시지 목록 */}
-      <div className="space-y-4 text-sm">
+      <div className="flex-1 overflow-y-auto px-4 space-y-4 text-sm">
         <div className="flex gap-2 items-end">
-          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-            <UserIcon className="w-4 h-4 text-gray-500" />
+          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mt-1">
+            <Image src="/usericon.png" alt="user" width={16} height={16} />
           </div>
           <div>
             <p className="font-semibold mb-1">익명</p>
@@ -58,8 +67,8 @@ export default function ChatDetailPage() {
         </div>
 
         <div className="flex gap-2 items-end">
-          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-            <UserIcon className="w-4 h-4 text-gray-500" />
+          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mt-1">
+            <Image src="/usericon.png" alt="user" width={16} height={16} />
           </div>
           <div>
             <p className="font-semibold mb-1">익명</p>
@@ -70,6 +79,25 @@ export default function ChatDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 입력창 */}
+    <div className="fixed bottom-[88px] left-0 right-0 max-w-lg mx-auto bg-white border-t px-4 py-3 flex gap-2">
+    <input
+        type="text"
+        placeholder="메시지를 입력하세요"
+        className="flex-1 border rounded-full px-4 py-2 text-sm outline-none"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+    />
+    <button
+        onClick={handleSend}
+        className="text-[#2269FF] font-semibold text-sm px-2"
+    >
+        전송
+    </button>
+    </div>
+
     </div>
   );
 }
