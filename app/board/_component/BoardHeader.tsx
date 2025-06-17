@@ -1,51 +1,58 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 import {
   MagnifyingGlassIcon,
   BellIcon,
   ChevronDownIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
+import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
+import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 
-const boards = ['전체게시판', '자유게시판', '비밀게시판', '정보게시판', '1학년게시판', '2학년게시판', '3학년게시판'];
+interface Props {
+  selected: string;
+  onOpen: () => void;
+  favorites: string[];
+  toggleFavorite: (board: string) => void;
+}
 
-export default function BoardHeader() {
-  const [selected, setSelected] = useState('전체게시판');
-  const [open, setOpen] = useState(false);
+export default function BoardHeader({
+  selected,
+  onOpen,
+  favorites,
+  toggleFavorite,
+}: Props) {
+  const isFavorite = favorites.includes(selected);
+
+  const handleStarClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // 드롭다운 방지
+    toggleFavorite(selected);
+  };
 
   return (
     <header className="px-4 pt-5 pb-3 bg-gray-50 sticky top-0 z-50 m-2">
       <div className="flex justify-between items-center">
-        {/* 게시판 선택 드롭다운 */}
-        <div className="relative">
-          <button
-            className="text-xl font-bold flex items-center gap-1"
-            onClick={() => setOpen((prev) => !prev)}
-          >
-            {selected}
-            <ChevronDownIcon className="w-4 h-4 text-gray-500" />
-          </button>
-          {open && (
-            <ul className="absolute mt-2 w-40 bg-white border rounded-md shadow z-50">
-              {boards.map((board) => (
-                <li
-                  key={board}
-                  onClick={() => {
-                    setSelected(board);
-                    setOpen(false);
-                  }}
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                >
-                  {board}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {/* 게시판 선택 버튼 */}
+        <button
+          className="text-xl font-bold flex items-center gap-1"
+          onClick={onOpen}
+        >
+          <span onClick={handleStarClick}>
+            {isFavorite ? (
+              <StarSolid className="w-5 h-5 text-yellow-400" />
+            ) : (
+              <StarOutline className="w-5 h-5 text-yellow-400" />
+            )}
+          </span>
+          {selected}
+          <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+        </button>
 
         <div className="flex items-center gap-4">
-          <PlusIcon className="w-6 h-6 text-gray-400" />
+          <Link href="/write">
+            <PlusIcon className="w-6 h-6 text-gray-400 cursor-pointer" />
+          </Link>
           <MagnifyingGlassIcon className="w-6 h-6 text-gray-400" />
           <div className="relative">
             <BellIcon className="w-6 h-6 text-gray-400" />

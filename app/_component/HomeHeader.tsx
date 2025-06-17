@@ -1,4 +1,5 @@
 'use client';
+
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -18,9 +19,9 @@ export default function HomeHeader() {
       </div>
 
       <div className='flex items-center gap-4 mt-3'>
-        <button>
-          <PlusIcon className='w-6 h-6 text-gray-400' />
-        </button>
+        <Link href="/write">
+          <PlusIcon className='w-6 h-6 text-gray-400 cursor-pointer' />
+        </Link>
         <button>
           <MagnifyingGlassIcon className='w-6 h-6 text-gray-400' />
         </button>

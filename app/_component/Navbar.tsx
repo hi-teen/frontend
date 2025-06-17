@@ -18,7 +18,7 @@ export default function Navbar() {
     { name: "게시판", href: "/board", icon: ClipboardIcon },
     { name: "채팅", href: "/messages", icon: ChatBubbleLeftIcon },
     { name: "시간표", href: "/schedule", icon: CalendarIcon },
-    { name: "프로필", href: "/profile", icon: UserIcon },
+    { name: "나의틴", href: "/profile", icon: UserIcon },
   ];
 
   return (

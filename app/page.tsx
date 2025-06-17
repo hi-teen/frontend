@@ -8,7 +8,6 @@ import TodayMealCard from './_component/TodayMealCard';
 import QuickMenu from './_component/QuickMenu';
 import FavoriteBoardSection from './_component/FavoriteBoardSection';
 import HotPostSection from './_component/HotPostSection';
-import PromotionBannerSection from './_component/PromotionBannerSection';
 
 const boards = [
   { key: 'free', label: '자유게시판', icon: '/smile.png' },
@@ -53,15 +52,38 @@ export default function HomePage() {
   const formattedDate = format(today, 'M월 d일 (EEEE)', { locale: ko });
   const [selected, setSelected] = useState('free');
 
-  const todayMeals = {
-    lunch: ['백미밥', '된장국', '돈까스', '양배추샐러드', '깍두기', '딸기'],
-    dinner: ['백미밥', '김치찌개', '고등어구이', '시금치나물', '김치'],
-  };
+  const monthMeals = [
+    {
+      date: formattedDate,
+      lunch: ['백미밥', '된장국', '돈까스', '양배추샐러드', '깍두기', '딸기'],
+      dinner: ['백미밥', '김치찌개', '고등어구이', '시금치나물', '김치'],
+    },
+    {
+      date: '6월 6일 (목)',
+      lunch: ['잡곡밥', '계란국', '제육볶음'],
+      dinner: ['우동', '단무지'],
+    },
+    {
+      date: '6월 7일 (금)',
+      lunch: ['카레라이스', '오이무침'],
+      dinner: ['김밥', '떡볶이'],
+    },
+    {
+      date: '6월 8일 (토)',
+      lunch: ['비빔밥', '미소된장국'],
+      dinner: ['짜장면', '단무지'],
+    },
+    {
+      date: '6월 9일 (일)',
+      lunch: ['볶음밥', '계란국'],
+      dinner: ['삼겹살', '상추'],
+    },
+  ];
 
   return (
-    <main className='pb-16 max-w-lg mx-auto'>
+    <main className="pb-16 max-w-lg mx-auto">
       <HomeHeader />
-      <TodayMealCard todayMeals={todayMeals} formattedDate={formattedDate} />
+      <TodayMealCard monthMeals={monthMeals} />
       <QuickMenu />
       <FavoriteBoardSection
         boards={boards}
@@ -70,7 +92,6 @@ export default function HomePage() {
         setSelected={setSelected}
       />
       <HotPostSection posts={hotPosts} />
-      <PromotionBannerSection />
     </main>
   );
 }

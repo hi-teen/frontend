@@ -1,64 +1,90 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import BoardSelectModal from '../board/_component/BoardSelectModal';
 
-export default function WritePage() {
+const boards = [
+  '전체게시판',
+  '자유게시판',
+  '비밀게시판',
+  '정보게시판',
+  '1학년게시판',
+  '2학년게시판',
+  '3학년게시판',
+];
+
+export default function PostWritePage() {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBoard, setSelectedBoard] = useState('게시판 선택');
+  const [favorites, setFavorites] = useState<string[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: API 연동
-    console.log({ title, content });
-    router.push("/");
+  const toggleFavorite = (board: string) => {
+    setFavorites((prev) =>
+      prev.includes(board) ? prev.filter((b) => b !== board) : [...prev, board]
+    );
   };
 
   return (
-    <main className='container mx-auto px-4 py-8'>
-      <div className='flex items-center gap-4 mb-8'>
-        <button
-          onClick={() => router.back()}
-          className='p-2 hover:bg-gray-100 rounded-full'
-        >
-          <ArrowLeftIcon className='w-6 h-6' />
+    <div className="relative max-w-lg mx-auto bg-white min-h-screen pb-[128px]">
+      {/* 상단 헤더 */}
+      <div className="flex items-center justify-between px-4 py-4 border-b">
+        <button onClick={() => router.back()}>
+          <ChevronLeftIcon className="w-5 h-5 text-gray-500" />
         </button>
-        <h1 className='text-2xl font-bold'>새 글 작성</h1>
+        <h1 className="text-base font-semibold">글쓰기</h1>
+        <div className="w-5 h-5" />
       </div>
 
-      <form onSubmit={handleSubmit} className='space-y-6'>
-        <div>
-          <input
-            type='text'
-            placeholder='제목을 입력하세요'
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className='w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-            required
-          />
-        </div>
+      {/* 게시판 선택 */}
+      <div className="px-4 pt-4">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="w-full text-left text-sm font-medium px-4 py-3 border rounded-lg text-gray-600"
+        >
+          {selectedBoard}
+        </button>
+      </div>
 
-        <div>
-          <textarea
-            placeholder='내용을 입력하세요'
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className='w-full h-96 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none'
-            required
-          />
-        </div>
+      {/* 제목 입력 */}
+      <div className="px-4 mt-4">
+        <input
+          type="text"
+          placeholder="제목을 입력하세요"
+          className="w-full border-b text-sm py-2 outline-none"
+        />
+      </div>
 
-        <div className='flex justify-end'>
-          <button
-            type='submit'
-            className='bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors'
-          >
-            게시하기
-          </button>
+      {/* 본문 입력 */}
+      <div className="px-4 mt-4">
+        <textarea
+          placeholder="내용을 입력하세요"
+          className="w-full min-h-[450px] text-sm p-3 border rounded-md outline-none"
+        />
+      </div>
+
+      {/* 하단 고정 안내 문구 */}
+      <div className="fixed bottom-[90px] left-0 right-0 px-4 z-40">
+        <div className="text-xs text-gray-500 p-4 rounded-t-xl max-w-lg mx-auto">
+          <ul className="list-disc pl-4 space-y-1">
+            <li>욕설, 비하, 차별, 혐오, 음란물 등의 게시물 금지</li>
+            <li>타인의 권리를 침해하거나 불쾌감을 줄 수 있는 내용 금지</li>
+            <li>타인 사칭, 허위정보, 광고 게시물 금지</li>
+          </ul>
         </div>
-      </form>
-    </main>
+      </div>
+
+      {/* 게시판 모달 */}
+      <BoardSelectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selected={selectedBoard}
+        onSelect={setSelectedBoard}
+        favorites={favorites}
+        toggleFavorite={toggleFavorite}
+      />
+    </div>
   );
 }
