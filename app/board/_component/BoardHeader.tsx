@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   MagnifyingGlassIcon,
   BellIcon,
@@ -25,7 +26,7 @@ export default function BoardHeader({
   const isFavorite = favorites.includes(selected);
 
   const handleStarClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // onOpen 방지
+    e.stopPropagation(); // 드롭다운 방지
     toggleFavorite(selected);
   };
 
@@ -49,7 +50,9 @@ export default function BoardHeader({
         </button>
 
         <div className="flex items-center gap-4">
-          <PlusIcon className="w-6 h-6 text-gray-400" />
+          <Link href="/write">
+            <PlusIcon className="w-6 h-6 text-gray-400 cursor-pointer" />
+          </Link>
           <MagnifyingGlassIcon className="w-6 h-6 text-gray-400" />
           <div className="relative">
             <BellIcon className="w-6 h-6 text-gray-400" />

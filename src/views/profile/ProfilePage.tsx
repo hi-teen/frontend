@@ -1,15 +1,23 @@
 'use client';
 
-import { UserIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import Image from 'next/image';
+import { ChevronRightIcon } from '@heroicons/react/24/solid';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
+  const router = useRouter();
+
+  const handleEdit = () => {
+    router.push('/profile/edit');
+  };
+
   return (
     <div className="px-4 pt-6 pb-20 max-w-lg mx-auto bg-gray-50 space-y-6">
       {/* 프로필 박스 */}
       <div className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-            <UserIcon className="w-6 h-6 text-gray-400" />
+            <Image src="/usericon.png" alt="user icon" width={24} height={24} />
           </div>
           <div className="text-sm leading-tight">
             <p className="font-semibold">홍길동</p>
@@ -17,7 +25,12 @@ export default function ProfilePage() {
             <p className="text-gray-400 text-xs">2학년 2반</p>
           </div>
         </div>
-        <button className="text-sm text-blue-500 font-semibold">수정</button>
+        <button
+          onClick={handleEdit}
+          className="text-sm text-blue-500 font-semibold"
+        >
+          수정
+        </button>
       </div>
 
       {/* 나의 글 */}

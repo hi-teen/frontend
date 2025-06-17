@@ -1,18 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { CalendarIcon } from '@heroicons/react/24/outline';
-
 const timetable = [
   ['국어', '수학', '영어', '사회', '체육'],
   ['과학', '미술', '음악', '국어', '수학'],
   ['영어', '사회', '체육', '과학', '미술'],
   ['음악', '국어', '수학', '영어', '사회'],
   ['체육', '과학', '미술', '음악', '국어'],
+  ['영어', '영어', '국어', '수학', '미술'],
+  ['체육', '과학', '미술', '수학', '과학'],
 ];
 
-const weekdays = ['월', '화', '수', '목', '금'];
-const periods = ['1교시', '2교시', '3교시', '4교시', '5교시'];
+const weekdays = ['월요일', '화요일', '수요일', '목요일', '금요일'];
+const periods = ['1교시', '2교시', '3교시', '4교시', '5교시', '6교시', '7교시'];
+const times = [
+  '09:00 - 09:50',
+  '10:00 - 10:50',
+  '11:00 - 11:50',
+  '13:00 - 13:50',
+  '14:00 - 14:50',
+  '15:00 - 15:50',
+  '16:00 - 16:50',
+];
 
 export default function SchedulePage() {
   return (
@@ -22,38 +30,37 @@ export default function SchedulePage() {
         <p className="text-sm text-gray-500 mt-1">2학년 2반 · 1학기</p>
       </div>
 
-      <div className="grid grid-cols-[60px_repeat(5,1fr)]">
-        <div className="text-center text-sm font-medium py-2"> </div>
+      {/* 요일 헤더 */}
+      <div className="grid grid-cols-[48px_repeat(5,1fr)] mb-1">
+        <div />
         {weekdays.map((day, i) => (
           <div
             key={i}
-            className="text-center text-sm font-medium py-2"
+            className="bg-gray-100 text-center text-xs font-bold text-gray-700 py-2 rounded-md mx-[2px]"
           >
             {day}
           </div>
         ))}
-
-        {timetable.map((row, i) => (
-          <>
-            <div
-              key={`period-${i}`}
-              className="text-center text-sm font-medium py-3"
-            >
-              {periods[i]}
-            </div>
-            {row.map((subject, j) => (
-              <div
-                key={`${i}-${j}`}
-                className="flex items-center justify-center py-3"
-              >
-                <span className="px-2 py-1 text-sm bg-blue-100 text-blue-800 rounded-full">
-                  {subject}
-                </span>
-              </div>
-            ))}
-          </>
-        ))}
       </div>
+
+      {/* 시간표 */}
+      {timetable.map((row, i) => (
+        <div key={i} className="grid grid-cols-[48px_repeat(5,1fr)] ">
+          {/* 교시 + 시간 */}
+          <div className="flex flex-col items-center justify-center text-sm font-medium text-gray-700 py-3">
+            <div>{periods[i]}</div>
+            <div className="text-[7px] text-gray-400">{times[i]}</div>
+          </div>
+          {/* 과목 */}
+          {row.map((subject, j) => (
+            <div key={`${i}-${j}`} className="flex items-center justify-center py-3">
+              <span className="px-3 py-2 text-sm font-bold bg-[#E9F0FF] text-black rounded-md">
+                {subject}
+              </span>
+            </div>
+          ))}
+        </div>
+      ))}
     </main>
   );
 }
