@@ -5,7 +5,7 @@ import Navbar from "./Navbar";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hideNavbar = pathname.startsWith("/signup");
+  const hideNavbar = pathname.startsWith("/signup") || pathname.startsWith("/login");
 
   return (
     <div className="min-h-[100dvh] bg-gray-50">
