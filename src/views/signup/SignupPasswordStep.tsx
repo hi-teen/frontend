@@ -1,20 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { useAtom } from 'jotai';
+import { signupFormAtom } from '@/shared/stores/signup';
 
 export default function SignupPasswordStep() {
   const router = useRouter();
+  const [form, setForm] = useAtom(signupFormAtom);
+
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const isValid = /^[A-Za-z\d]{7,}$/.test(password);
-  const isMatched = password === confirm;
+  useEffect(() => {
+    if (form.password) setPassword(form.password);
+    if (form.passwordConfirm) setConfirm(form.passwordConfirm);
+  }, [form]);
 
+  const isValid = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{7,}$/.test(password); // 영어+숫자 7자 이상
+  const isMatched = password === confirm;
   const canProceed = isValid && isMatched;
+
+  const handleNext = () => {
+    if (!canProceed) return;
+
+    setForm((prev) => ({
+      ...prev,
+      password,
+      passwordConfirm: confirm,
+    }));
+
+    router.push('/signup/step/complete');
+  };
 
   return (
     <div className="flex flex-col justify-between min-h-[100dvh] max-w-lg mx-auto px-6 pt-28 pb-10 bg-white">
@@ -74,7 +94,7 @@ export default function SignupPasswordStep() {
 
       <button
         disabled={!canProceed}
-        onClick={() => router.push('/signup/step/complete')}
+        onClick={handleNext}
         className={`w-full mt-6 py-4 rounded-xl font-semibold text-white text-base ${
           canProceed ? 'bg-[#2269FF]' : 'bg-gray-300'
         }`}

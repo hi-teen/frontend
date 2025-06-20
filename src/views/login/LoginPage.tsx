@@ -1,19 +1,36 @@
 'use client';
 
 import { useState } from 'react';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useSetAtom } from 'jotai';
+import { loginApi, fetchMe } from '@/shared/api/auth';
+import { userAtom } from '@/entities/auth/model';
 
 export default function LoginPage() {
   const router = useRouter();
+  const setUser = useSetAtom(userAtom);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isPasswordValid = password.length >= 7;
-
   const canLogin = isEmailValid && isPasswordValid;
+
+  const handleLogin = async () => {
+    try {
+      await loginApi(email, password);
+      const me = await fetchMe();
+      setUser(me);
+      router.push('/');
+    } catch (err) {
+      console.error(err);
+      setError('이메일 또는 비밀번호를 다시 확인해주세요.');
+    }
+  };
 
   return (
     <div className="flex flex-col justify-between min-h-[100dvh] max-w-lg mx-auto px-6 pt-28 pb-10 bg-white">
@@ -54,12 +71,13 @@ export default function LoginPage() {
             )}
           </button>
         </div>
-        <p className="text-sm text-gray-500 mb-6">비밀번호는 7자 이상 입력해주세요.</p>
+        <p className="text-sm text-gray-500 mb-4">비밀번호는 7자 이상 입력해주세요.</p>
+        {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
 
       <button
         disabled={!canLogin}
-        onClick={() => router.push('/')}
+        onClick={handleLogin}
         className={`w-full mt-6 py-4 rounded-xl font-semibold text-white text-base ${
           canLogin ? 'bg-[#2269FF]' : 'bg-gray-300'
         }`}

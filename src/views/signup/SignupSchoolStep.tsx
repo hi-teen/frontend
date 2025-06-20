@@ -4,10 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { useAtom } from 'jotai';
+import { signupFormAtom } from '@/shared/stores/signup';
 import SchoolConfirmModal from './SchoolConfirmModal';
 
 export default function SignupSchoolStep() {
   const router = useRouter();
+  const [form, setForm] = useAtom(signupFormAtom);
+
   const [school, setSchool] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -16,6 +20,12 @@ export default function SignupSchoolStep() {
     const value = e.target.value;
     setSchool(value);
     setShowDropdown(value.includes('한국고등학교'));
+  };
+
+  const handleConfirm = () => {
+    setForm((prev) => ({ ...prev, school: '한국고등학교' }));
+    setShowModal(false);
+    router.push('/signup/step/info');
   };
 
   return (
@@ -52,7 +62,7 @@ export default function SignupSchoolStep() {
       <SchoolConfirmModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        onConfirm={() => router.push('/signup/step/info')}
+        onConfirm={handleConfirm}
       />
     </div>
   );
