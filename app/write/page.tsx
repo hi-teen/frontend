@@ -20,11 +20,52 @@ export default function PostWritePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState('게시판 선택');
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
 
   const toggleFavorite = (board: string) => {
     setFavorites((prev) =>
       prev.includes(board) ? prev.filter((b) => b !== board) : [...prev, board]
     );
+  };
+
+  const handleSubmit = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    if (!title || !content || selectedBoard === '게시판 선택') {
+      alert('모든 항목을 입력해주세요.');
+      return;
+    }
+
+    try {
+      const res = await fetch('https://hiteen.site/api/v1/boards', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title,
+          content,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('[게시글 등록 실패]', errorText);
+        alert('게시글 등록 실패');
+        return;
+      }
+
+      alert('게시글이 등록되었습니다');
+      router.push('/board');
+    } catch (error) {
+      console.error('[에러]', error);
+      alert('오류가 발생했습니다');
+    }
   };
 
   return (
@@ -54,6 +95,8 @@ export default function PostWritePage() {
           type="text"
           placeholder="제목을 입력하세요"
           className="w-full border-b text-sm py-2 outline-none"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
       </div>
 
@@ -62,8 +105,21 @@ export default function PostWritePage() {
         <textarea
           placeholder="내용을 입력하세요"
           className="w-full min-h-[450px] text-sm p-3 border rounded-md outline-none"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
         />
       </div>
+
+      {/* 등록 버튼 (하단 고정) */}
+<div className="fixed bottom-0 left-0 right-0 px-4 pb-6 bg-white z-50">
+  <button
+    onClick={handleSubmit}
+    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg"
+  >
+    등록
+  </button>
+</div>
+
 
       {/* 하단 고정 안내 문구 */}
       <div className="fixed bottom-[90px] left-0 right-0 px-4 z-40">

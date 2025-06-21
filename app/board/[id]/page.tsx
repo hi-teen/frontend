@@ -1,25 +1,49 @@
 'use client';
 
-import { useState } from 'react';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import {
+  ArrowLeftIcon,
   ChatBubbleLeftEllipsisIcon,
   HeartIcon,
   PaperAirplaneIcon,
   BookmarkIcon,
   ArrowUturnRightIcon,
 } from '@heroicons/react/24/solid';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { fetchBoardDetail } from '@/shared/api/board';
+
+interface BoardDetail {
+  id: number;
+  title: string;
+  content: string;
+  loveCount: number;
+  scrapCount: number;
+  createdDate: string;
+}
 
 export default function PostDetailPage() {
   const router = useRouter();
+  const { id } = useParams(); // /board/1 → id = '1'
+
+  const [detail, setDetail] = useState<BoardDetail | null>(null);
   const [liked, setLiked] = useState(false);
   const [scrapped, setScrapped] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
-  const toggleLike = () => setLiked((prev) => !prev);
-  const toggleScrap = () => setScrapped((prev) => !prev);
+  useEffect(() => {
+    if (!id) return;
+    fetchBoardDetail(Number(id))
+      .then(setDetail)
+      .catch((e) => {
+        console.error('상세 조회 실패', e);
+        alert('게시글을 불러오는 데 실패했습니다.');
+      });
+  }, [id]);
+
+  if (!detail) {
+    return <div className="p-4">로딩 중...</div>;
+  }
 
   return (
     <div className="max-w-lg mx-auto min-h-screen bg-gray-50 pb-[80px]">
@@ -28,7 +52,7 @@ export default function PostDetailPage() {
         <button onClick={() => router.back()}>
           <ArrowLeftIcon className="w-5 h-5 text-gray-400" />
         </button>
-        <h1 className="text-base font-semibold">자유게시판</h1>
+        <h1 className="text-base font-semibold">게시글 상세</h1>
       </div>
 
       {/* 게시글 내용 */}
@@ -38,30 +62,26 @@ export default function PostDetailPage() {
             <Image src="/usericon.png" alt="user" width={14} height={14} />
           </div>
           <span className="font-semibold text-sm text-black">익명</span>
-          <span className="text-gray-400 text-xs">· 06/18 12:24</span>
+          <span className="text-gray-400 text-xs">· {detail.createdDate}</span>
         </div>
-        <h2 className="text-lg font-bold mb-3">밥을 먹어도 배고플 수 있나...?</h2>
+        <h2 className="text-lg font-bold mb-3">{detail.title}</h2>
         <div className="text-sm text-gray-800 leading-relaxed mb-4">
-          사람이 맞나요? 궁금해요 초코파이 붐업
+          {detail.content}
         </div>
 
         {/* 기능 아이콘 */}
         <div className="flex items-center gap-5 text-gray-500 text-sm mb-4">
-          <button className="flex items-center gap-1" onClick={toggleLike}>
+          <button className="flex items-center gap-1" onClick={() => setLiked(!liked)}>
             <HeartIcon className={`w-5 h-5 ${liked ? 'text-red-500' : 'text-gray-400'}`} />
-            <span className="text-xs">50</span>
+            <span className="text-xs">{detail.loveCount}</span>
           </button>
           <div className="flex items-center gap-1">
             <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
-            <span className="text-xs">2</span>
+            <span className="text-xs">0</span>
           </div>
-          <button className="flex items-center gap-1" onClick={toggleScrap}>
+          <button className="flex items-center gap-1" onClick={() => setScrapped(!scrapped)}>
             <BookmarkIcon className={`w-5 h-5 ${scrapped ? 'text-blue-500' : 'text-gray-400'}`} />
-            <span className="text-xs">12</span>
-          </button>
-          <button className="flex items-center gap-1 ml-auto">
-            <PaperAirplaneIcon className="w-5 h-5" />
-            <span className="text-xs">DM</span>
+            <span className="text-xs">{detail.scrapCount}</span>
           </button>
         </div>
       </div>
