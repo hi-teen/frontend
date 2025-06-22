@@ -54,16 +54,32 @@ export default function ProfilePage() {
         </div>
 
         {/* 나의 글 */}
-        <div className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
+        <div
+          onClick={() => router.push('/profile/my-posts')}
+          className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
+        >
           <p className="font-semibold text-sm">나의 글</p>
           <ChevronRightIcon className="w-5 h-5 text-gray-400" />
         </div>
 
         {/* 나의 댓글 */}
-        <div className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
+        <div
+          onClick={() => router.push('/profile/my-comments')}
+          className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
+        >
           <p className="font-semibold text-sm">나의 댓글</p>
           <ChevronRightIcon className="w-5 h-5 text-gray-400" />
         </div>
+
+        {/* 스크랩한 글 */}
+        <div
+          onClick={() => router.push('/profile/scraps')}
+          className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
+        >
+          <p className="font-semibold text-sm">스크랩한 글</p>
+          <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+        </div>
+
 
         {/* 고객 지원 */}
         <div className="bg-white p-4 rounded-2xl text-sm shadow-sm">
