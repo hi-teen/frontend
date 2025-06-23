@@ -1,25 +1,30 @@
 'use client';
 
-import PostCard from '../../../app/_component/PostCard';
+import { useEffect, useState } from 'react';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { fetchMyComments } from '@/shared/api/profile';
+
+interface MyCommentItem {
+  commentId: number;
+  content: string;
+  boardId: number;
+  boardTitle: string;
+  createdDate: string;
+}
 
 export default function MyCommentsPage() {
   const router = useRouter();
+  const [comments, setComments] = useState<MyCommentItem[]>([]);
 
-  // TODO: 실제 데이터로 교체
-  const dummyComments = [
-    {
-      id: 2,
-      title: '댓글 단 글 제목',
-      board: '정보게시판',
-      content: '여기에 댓글을 남겼어요.',
-      likes: 5,
-      comments: 2,
-      views: 40,
-      date: '3일 전',
-    },
-  ];
+  useEffect(() => {
+    fetchMyComments()
+      .then(setComments)
+      .catch((e) => {
+        console.error('내 댓글 불러오기 실패', e);
+        alert('댓글을 불러오는 데 실패했습니다.');
+      });
+  }, []);
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-20 bg-gray-50 min-h-screen">
@@ -32,9 +37,29 @@ export default function MyCommentsPage() {
       </div>
 
       <div className="space-y-4">
-        {dummyComments.map((post) => (
-          <PostCard key={post.id} {...post} />
-        ))}
+        {comments.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center mt-10">작성한 댓글이 없습니다.</p>
+        ) : (
+          comments.map((comment) => (
+            <div
+              key={comment.commentId}
+              className="bg-white rounded-2xl px-4 py-3 shadow-sm"
+            >
+              <p className="text-xs text-gray-400 mb-1">
+                {comment.createdDate} · <span className="text-blue-500">{comment.boardTitle}</span>
+              </p>
+              <p className="text-sm text-gray-800">{comment.content}</p>
+              <div className="mt-2 text-right">
+                <button
+                  onClick={() => router.push(`/board/${comment.boardId}`)}
+                  className="text-xs text-blue-500"
+                >
+                  원글 보기 →
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

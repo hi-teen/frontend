@@ -1,25 +1,34 @@
 'use client';
 
-import PostCard from '../../../app/_component/PostCard';
-import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import PostCard from '../../../app/_component/PostCard';
+import { BoardItem } from '@/shared/api/board';
 
 export default function MyScrapsPage() {
   const router = useRouter();
+  const [scraps, setScraps] = useState<BoardItem[]>([]);
 
-  // TODO: 실제 데이터로 교체
-  const dummyScraps = [
-    {
-      id: 3,
-      title: '스크랩한 게시글',
-      board: '비밀게시판',
-      content: '이 글이 마음에 들어서 스크랩했어요.',
-      likes: 20,
-      comments: 7,
-      views: 300,
-      date: '5일 전',
-    },
-  ];
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    fetch('https://hiteen.site/api/v1/scraps/me', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('스크랩한 글 조회 실패');
+        return res.json();
+      })
+      .then((data) => setScraps(data))
+      .catch((e) => {
+        console.error(e);
+        alert('스크랩한 글을 불러오는 데 실패했습니다.');
+      });
+  }, []);
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-20 bg-gray-50 min-h-screen">
@@ -32,8 +41,18 @@ export default function MyScrapsPage() {
       </div>
 
       <div className="space-y-4">
-        {dummyScraps.map((post) => (
-          <PostCard key={post.id} {...post} />
+        {scraps.map((post) => (
+          <PostCard
+            key={post.id}
+            id={post.id}
+            title={post.title}
+            board={'게시판'} // 서버 응답에 board 없으면 임시 처리
+            content={post.content}
+            likes={post.loveCount}
+            comments={0} // 댓글 수 없으면 임시 0 처리
+            views={0}     // 조회 수 없으면 임시 0 처리
+            date={new Date(post.createdDate).toLocaleDateString('ko-KR')}
+          />
         ))}
       </div>
     </div>

@@ -4,8 +4,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRightIcon, MagnifyingGlassIcon, BellIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { BoardItem } from '@/shared/api/board';
 
 const SearchModal = dynamic(() => import('../../../app/_component/SearchModal'), {
   ssr: false,
@@ -14,10 +15,28 @@ const SearchModal = dynamic(() => import('../../../app/_component/SearchModal'),
 export default function ProfilePage() {
   const router = useRouter();
   const [openSearch, setOpenSearch] = useState(false);
+  const [lovedPosts, setLovedPosts] = useState<BoardItem[]>([]);
 
   const handleEdit = () => {
     router.push('/profile/edit');
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    fetch('https://hiteen.site/api/v1/loves/me', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('좋아요 글 불러오기 실패');
+        return res.json();
+      })
+      .then(setLovedPosts)
+      .catch(console.error);
+  }, []);
 
   return (
     <>
@@ -55,7 +74,7 @@ export default function ProfilePage() {
 
         {/* 나의 글 */}
         <div
-          onClick={() => router.push('/profile/my-posts')}
+          onClick={() => router.push('/profile/posts')}
           className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
         >
           <p className="font-semibold text-sm">나의 글</p>
@@ -64,7 +83,7 @@ export default function ProfilePage() {
 
         {/* 나의 댓글 */}
         <div
-          onClick={() => router.push('/profile/my-comments')}
+          onClick={() => router.push('/profile/comments')}
           className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
         >
           <p className="font-semibold text-sm">나의 댓글</p>
@@ -80,6 +99,14 @@ export default function ProfilePage() {
           <ChevronRightIcon className="w-5 h-5 text-gray-400" />
         </div>
 
+        {/* 좋아요한 글 */}
+        <div
+          onClick={() => router.push('/profile/likes')}
+          className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
+        >
+          <p className="font-semibold text-sm">좋아요한 글</p>
+          <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+        </div>
 
         {/* 고객 지원 */}
         <div className="bg-white p-4 rounded-2xl text-sm shadow-sm">

@@ -74,3 +74,21 @@ export const toggleLove = async (boardId: number) => {
     if (!res.ok) throw new Error('스크랩 실패');
   };
   
+  // 내가 작성한 게시글 목록 조회
+export const fetchMyPosts = async (): Promise<BoardItem[]> => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) throw new Error('토큰 없음');
+  
+    const res = await fetch(`https://hiteen.site/api/v1/boards/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    if (!res.ok) {
+      throw new Error('내 글 목록 불러오기 실패');
+    }
+  
+    return res.json(); // BoardItem[]
+  };
+  

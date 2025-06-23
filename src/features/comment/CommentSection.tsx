@@ -127,7 +127,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
               <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center mt-1">
                 <Image src="/usericon.png" alt="user" width={16} height={16} />
               </div>
-              <div className="flex-1 pr-10">
+              <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">
                     익명{c.anonymousNumber ?? 0}
@@ -166,7 +166,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
                     {c.replies.map((reply) => (
                       <div
                         key={reply.replyId}
-                        className="ml-6 p-2 bg-gray-50 rounded-md border border-gray-100 relative"
+                        className="p-2 bg-gray-50 rounded-xl border border-gray-100 relative"
                       >
                         <div className="absolute top-2 right-2 flex gap-2 text-gray-400">
                           <button>

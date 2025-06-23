@@ -1,25 +1,32 @@
 'use client';
 
-import PostCard from '../../../app/_component/PostCard';
-import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import PostCard from '../../../app/_component/PostCard';
+import { fetchMyPosts } from '@/shared/api/board';
+import { BoardItem } from '@/shared/api/board';
 
 export default function MyPostsPage() {
   const router = useRouter();
+  const [posts, setPosts] = useState<BoardItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // TODO: 실제 데이터로 교체
-  const dummyPosts = [
-    {
-      id: 1,
-      title: '내가 쓴 글 제목',
-      board: '자유게시판',
-      content: '이건 내가 작성한 글이에요.',
-      likes: 10,
-      comments: 3,
-      views: 120,
-      date: '1일 전',
-    },
-  ];
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        const data = await fetchMyPosts();
+        setPosts(data);
+      } catch (err) {
+        console.error('내 글 조회 실패:', err);
+        alert('내 글을 불러오는 데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
+  }, []);
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-20 bg-gray-50 min-h-screen">
@@ -31,11 +38,27 @@ export default function MyPostsPage() {
         <div className="w-5" />
       </div>
 
-      <div className="space-y-4">
-        {dummyPosts.map((post) => (
-          <PostCard key={post.id} {...post} />
-        ))}
-      </div>
+      {loading ? (
+        <p className="text-center text-sm text-gray-500">불러오는 중...</p>
+      ) : posts.length === 0 ? (
+        <p className="text-center text-sm text-gray-400">작성한 글이 없습니다.</p>
+      ) : (
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <PostCard
+              key={post.id}
+              id={post.id}
+              title={post.title}
+              board={post.board}
+              content={post.content}
+              likes={post.loveCount}
+              comments={0}
+              views={0} 
+              date={post.createdDate}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
