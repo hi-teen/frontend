@@ -15,7 +15,6 @@ interface BoardSelectModalProps {
 }
 
 const boards = [
-  '전체게시판',
   '자유게시판',
   '비밀게시판',
   '정보게시판',

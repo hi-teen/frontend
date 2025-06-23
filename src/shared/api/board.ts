@@ -41,4 +41,36 @@ export const fetchBoardDetail = async (boardId: number) => {
   
     return res.json(); // { id, title, content, loveCount, scrapCount, createdDate }
   };
+
+export const toggleLove = async (boardId: number) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) throw new Error('토큰 없음');
+  
+    const res = await fetch(`https://hiteen.site/api/v1/loves?boardId=${boardId}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    if (!res.ok) {
+      throw new Error('좋아요 요청 실패');
+    }
+  
+    return res.text();
+  };
+  
+  export const toggleScrap = async (boardId: number) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) throw new Error('토큰 없음');
+  
+    const res = await fetch(`https://hiteen.site/api/v1/scraps?boardId=${boardId}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    if (!res.ok) throw new Error('스크랩 실패');
+  };
   

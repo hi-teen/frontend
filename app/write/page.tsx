@@ -6,7 +6,6 @@ import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import BoardSelectModal from '../board/_component/BoardSelectModal';
 
 const boards = [
-  '전체게시판',
   '자유게시판',
   '비밀게시판',
   '정보게시판',

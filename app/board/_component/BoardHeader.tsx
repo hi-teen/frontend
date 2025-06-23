@@ -25,8 +25,6 @@ interface Props {
 
 const boards = [
   { name: '전체', emoji: '📋' },
-  { name: '추천', emoji: '🎨' },
-  { name: '인기', emoji: '🔥' },
   { name: '자유게시판', emoji: '😊' },
   { name: '비밀게시판', emoji: '🤫' },
   { name: '정보게시판', emoji: '💡' },
