@@ -1,7 +1,5 @@
 'use client';
 
-import { signupAtom } from '../../entities/auth/model/signupAtom';
-
 export interface SignupFormData {
   email: string;
   password: string;
@@ -13,40 +11,37 @@ export interface SignupFormData {
   classNumber: number;
 }
 
+export interface UserInfo {
+  email: string;
+  name: string;
+  nickname: string;
+  school: string;
+  gradeNumber: number;
+  classNumber: number;
+}
+
 // 로그인 API
 export const loginApi = async (email: string, password: string): Promise<string> => {
-    try {
-      console.log('[로그인 요청 데이터]', { email, password });
-  
-      const res = await fetch('https://hiteen.site/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // 쿠키 기반 인증 사용 시
-        body: JSON.stringify({ email, password }),
-      });
-  
-      console.log('[로그인 응답 상태]', res.status);
-  
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('[로그인 실패 응답]', errorText);
-        throw new Error('로그인 실패');
-      }
-  
-      const token = await res.text();
-      console.log('[로그인 성공 - 토큰]', token);
-  
-      localStorage.setItem('accessToken', token);
-      return token;
-    } catch (error) {
-      console.error('[로그인 중 오류 발생]', error);
-      throw error;
-    }
-  };
-  
+  const res = await fetch('https://hiteen.site/api/v1/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
 
-// 내 정보 가져오기
-export const fetchMe = async (): Promise<{ email: string }> => {
+  const text = await res.text();
+
+  if (!res.ok) {
+    throw new Error(text || '로그인 실패');
+  }
+
+  // 서버 응답은 토큰
+  localStorage.setItem('accessToken', text);
+  return text;
+};
+
+// 로그인된 사용자 정보 가져오기
+// 로그인된 사용자 정보 가져오기
+export const fetchMe = async (): Promise<UserInfo> => {
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('토큰 없음');
 
@@ -56,25 +51,61 @@ export const fetchMe = async (): Promise<{ email: string }> => {
     },
   });
 
+  const text = await res.text();
+
   if (!res.ok) {
-    throw new Error('유저 정보 가져오기 실패');
+    try {
+      const json = JSON.parse(text);
+      const msg = json?.header?.message || '유저 정보 가져오기 실패';
+      throw new Error(msg);
+    } catch {
+      throw new Error(text || '유저 정보 가져오기 실패');
+    }
   }
 
-  const email = await res.text();
-  return { email };
+  // 서버가 이메일만 주는 경우
+  const emailMatch = text.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+  const email = emailMatch?.[1] || text;
+
+  // fallback: 회원가입 시 저장해둔 정보를 보완
+  const saved = localStorage.getItem('signupProfile');
+  const backup = saved ? JSON.parse(saved) : {};
+
+  return {
+    email,
+    name: backup.name ?? '',
+    nickname: backup.nickname ?? '',
+    school: backup.school ?? '',
+    gradeNumber: backup.gradeNumber ?? 0,
+    classNumber: backup.classNumber ?? 0,
+  };
 };
 
 // 회원가입 API
-export async function signUpApi(form: SignupFormData) {
+export async function signUpApi(form: SignupFormData): Promise<UserInfo> {
   const res = await fetch('https://hiteen.site/api/v1/members/sign-up', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(form),
   });
 
+  const text = await res.text();
+
   if (!res.ok) {
-    throw new Error('회원가입 실패');
+    try {
+      const json = JSON.parse(text);
+      const msg = json?.header?.message || '회원가입 실패';
+      console.error('회원가입 실패 응답:', msg);
+      throw new Error(msg);
+    } catch {
+      console.error('회원가입 실패 응답:', text);
+      throw new Error(text || '회원가입 실패');
+    }
   }
 
-  return res.json(); // 가입된 유저 정보 반환
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('서버 응답이 JSON 형식이 아님');
+  }
 }

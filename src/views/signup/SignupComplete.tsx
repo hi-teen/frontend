@@ -1,33 +1,54 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAtom } from 'jotai';
 import { signupFormAtom } from '@/shared/stores/signup';
-import { signUpApi } from '@/shared/api/auth';
+import { userAtom } from '@/entities/auth/model/authAtom';
+import { signUpApi, loginApi, fetchMe } from '@/shared/api/auth';
 
 export default function SignupCompletePage() {
   const router = useRouter();
   const [form] = useAtom(signupFormAtom);
+  const [, setUser] = useAtom(userAtom);
   const [isSubmitting, setIsSubmitting] = useState(true);
   const [error, setError] = useState('');
   const [nickname, setNickname] = useState('');
+  const calledRef = useRef(false); // ← 중복 호출 방지용
 
   useEffect(() => {
     const submit = async () => {
+      if (calledRef.current) return;
+      calledRef.current = true;
+
       try {
-        const result = await signUpApi(form);
-        setNickname(result.nickname); // 응답 객체에 nickname 있음
+        // 회원가입
+        await signUpApi(form);
+
+        // 로그인
+        await loginApi(form.email, form.password);
+
+        // 백업용 정보 저장
+        localStorage.setItem('signupProfile', JSON.stringify(form));
+
+        // 사용자 정보 받아오기
+        const userInfo = await fetchMe();
+        setUser(userInfo);
+        setNickname(userInfo.nickname);
       } catch (err) {
         console.error(err);
-        setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+        setError(
+          err instanceof Error
+            ? err.message
+            : '회원가입에 실패했습니다. 다시 시도해주세요.'
+        );
       } finally {
         setIsSubmitting(false);
       }
     };
 
     submit();
-  }, [form]);
+  }, [form, setUser]);
 
   return (
     <div className="flex flex-col justify-between min-h-[100dvh] px-6 pt-28 pb-10 max-w-lg mx-auto">

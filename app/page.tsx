@@ -3,24 +3,28 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { useAtom } from 'jotai';
+import { favoriteBoardsAtom } from '@/entities/auth/model/favoriteBoardsAtom';
+
 import HomeHeader from './_component/HomeHeader';
 import TodayMealCard from './_component/TodayMealCard';
 import QuickMenu from './_component/QuickMenu';
 import FavoriteBoardSection from './_component/FavoriteBoardSection';
 import HotPostSection from './_component/HotPostSection';
 
-const boards = [
+const allBoards = [
   { key: 'free', label: '자유게시판', icon: '/smile.png' },
   { key: 'secret', label: '비밀게시판', icon: '/secret.png' },
   { key: 'info', label: '정보게시판', icon: '/light.png' },
   { key: '1st', label: '1학년게시판', icon: '/first.png' },
 ];
 
+// 게시판별 post 구조에 boardKey 추가
 const posts = [
-  { id: 1, title: '종강 6월 16일인가요?', likes: 1, comments: 13 },
-  { id: 2, title: '중간고사 점수 공유해요', likes: 3, comments: 5 },
-  { id: 3, title: '급식이 너무 맛없어요', likes: 0, comments: 7 },
-  { id: 4, title: '시험 기간 꿀팁 공유', likes: 12, comments: 8 },
+  { id: 1, title: '종강 6월 16일인가요?', likes: 1, comments: 13, boardKey: 'free' },
+  { id: 2, title: '중간고사 점수 공유해요', likes: 3, comments: 5, boardKey: 'info' },
+  { id: 3, title: '급식이 너무 맛없어요', likes: 0, comments: 7, boardKey: 'free' },
+  { id: 4, title: '시험 기간 꿀팁 공유', likes: 12, comments: 8, boardKey: '1st' },
 ];
 
 const hotPosts = [
@@ -50,7 +54,12 @@ const hotPosts = [
 export default function HomePage() {
   const today = new Date();
   const formattedDate = format(today, 'M월 d일 (EEEE)', { locale: ko });
+
   const [selected, setSelected] = useState('free');
+  const [favorites] = useAtom(favoriteBoardsAtom); // 전역 상태 사용
+
+  const favoriteBoards = allBoards.filter((board) => favorites.includes(board.key));
+  const filteredPosts = posts.filter((post) => post.boardKey === selected);
 
   const monthMeals = [
     {
@@ -86,8 +95,8 @@ export default function HomePage() {
       <TodayMealCard monthMeals={monthMeals} />
       <QuickMenu />
       <FavoriteBoardSection
-        boards={boards}
-        posts={posts}
+        boards={favoriteBoards}
+        posts={filteredPosts}
         selected={selected}
         setSelected={setSelected}
       />

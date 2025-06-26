@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import { useAtom } from 'jotai';
+import { favoriteBoardsAtom } from '@/entities/auth/model/favoriteBoardsAtom';
 
 interface BoardSelectModalProps {
   isOpen: boolean;
@@ -15,12 +17,12 @@ interface BoardSelectModalProps {
 }
 
 const boards = [
-  '자유게시판',
-  '비밀게시판',
-  '정보게시판',
-  '1학년게시판',
-  '2학년게시판',
-  '3학년게시판',
+  { key: 'free', label: '자유게시판' },
+  { key: 'secret', label: '비밀게시판' },
+  { key: 'info', label: '정보게시판' },
+  { key: '1st', label: '1학년게시판' },
+  { key: '2nd', label: '2학년게시판' },
+  { key: '3rd', label: '3학년게시판' },
 ];
 
 export default function BoardSelectModal({
@@ -28,9 +30,15 @@ export default function BoardSelectModal({
   onClose,
   selected,
   onSelect,
-  favorites,
-  toggleFavorite,
 }: BoardSelectModalProps) {
+  const [favorites, setFavorites] = useAtom(favoriteBoardsAtom);
+
+  const toggleFavorite = (key: string) => {
+    setFavorites((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
+    );
+  };
+
   useEffect(() => {
     if (!isOpen) return;
     document.body.style.overflow = 'hidden';
@@ -43,13 +51,7 @@ export default function BoardSelectModal({
 
   return (
     <div className="fixed inset-0 z-50">
-      {/* 배경 어둡게 */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-      />
-
-      {/* 슬라이드업 패널 */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl pt-4 pb-6 px-5 animate-slide-up">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-base font-semibold">게시판 선택</h2>
@@ -60,13 +62,13 @@ export default function BoardSelectModal({
 
         <ul className="space-y-3">
           {boards.map((board) => {
-            const isFavorite = favorites.includes(board);
+            const isFavorite = favorites.includes(board.key);
             return (
               <li
-                key={board}
+                key={board.key}
                 className="flex items-center justify-between cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-xl"
                 onClick={() => {
-                  onSelect(board);
+                  onSelect(board.key);
                   onClose();
                 }}
               >
@@ -74,7 +76,7 @@ export default function BoardSelectModal({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleFavorite(board);
+                      toggleFavorite(board.key);
                     }}
                   >
                     {isFavorite ? (
@@ -85,10 +87,10 @@ export default function BoardSelectModal({
                   </button>
                   <span
                     className={`text-sm ${
-                      selected === board ? 'font-bold text-blue-500' : 'text-gray-800'
+                      selected === board.key ? 'font-bold text-blue-500' : 'text-gray-800'
                     }`}
                   >
-                    {board}
+                    {board.label}
                   </span>
                 </div>
               </li>

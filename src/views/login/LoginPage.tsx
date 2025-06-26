@@ -22,13 +22,19 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
+      // 로그인 API 호출 (실패하면 여기서 예외 발생)
       await loginApi(email, password);
+
+      // 로그인 성공 → 사용자 정보 불러오기
       const me = await fetchMe();
+      console.log('✅ 로그인된 사용자:', me);
       setUser(me);
+
+      // 홈으로 이동
       router.push('/');
     } catch (err) {
       console.error(err);
-      setError('이메일 또는 비밀번호를 다시 확인해주세요.');
+      setError(err instanceof Error ? err.message : '이메일 또는 비밀번호를 다시 확인해주세요.');
     }
   };
 
@@ -37,7 +43,7 @@ export default function LoginPage() {
       <div>
         <h1 className="text-xl font-bold mb-6">로그인</h1>
 
-        {/* 이메일 */}
+        {/* 이메일 입력 */}
         <label className="text-sm text-[#2269FF] font-medium">이메일</label>
         <div className="border-b-2 border-gray-300 focus-within:border-[#2269FF] mb-6">
           <input
@@ -49,7 +55,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* 비밀번호 */}
+        {/* 비밀번호 입력 */}
         <label className="text-sm text-[#2269FF] font-medium">비밀번호</label>
         <div className="relative border-b-2 border-gray-300 focus-within:border-[#2269FF] mb-1">
           <input
@@ -75,6 +81,7 @@ export default function LoginPage() {
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
 
+      {/* 로그인 버튼 */}
       <button
         disabled={!canLogin}
         onClick={handleLogin}
