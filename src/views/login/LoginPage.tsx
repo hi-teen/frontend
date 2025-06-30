@@ -6,10 +6,12 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useSetAtom } from 'jotai';
 import { loginApi, fetchMe } from '@/shared/api/auth';
 import { userAtom } from '@/entities/auth/model';
+import { accessTokenAtom } from '@/shared/stores/auth';
 
 export default function LoginPage() {
   const router = useRouter();
   const setUser = useSetAtom(userAtom);
+  const setAccessToken = useSetAtom(accessTokenAtom);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,12 +24,13 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      // 로그인 API 호출 (실패하면 여기서 예외 발생)
-      await loginApi(email, password);
+      // 로그인 후 accessToken 저장
+      const token = await loginApi(email, password);
+      setAccessToken(token); 
 
-      // 로그인 성공 → 사용자 정보 불러오기
+      // 사용자 정보 불러오기
       const me = await fetchMe();
-      console.log('✅ 로그인된 사용자:', me);
+      console.log('로그인된 사용자:', me);
       setUser(me);
 
       // 홈으로 이동

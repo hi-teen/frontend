@@ -1,13 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Dialog } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
-import { useAtom } from 'jotai';
-import { favoriteBoardsAtom } from '@/entities/auth/model/favoriteBoardsAtom';
 
-interface BoardSelectModalProps {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
   selected: string;
@@ -16,13 +12,14 @@ interface BoardSelectModalProps {
   toggleFavorite: (board: string) => void;
 }
 
-const boards = [
-  { key: 'free', label: '자유게시판' },
-  { key: 'secret', label: '비밀게시판' },
-  { key: 'info', label: '정보게시판' },
-  { key: '1st', label: '1학년게시판' },
-  { key: '2nd', label: '2학년게시판' },
-  { key: '3rd', label: '3학년게시판' },
+const boardLabels = [
+  '전체',
+  '자유게시판',
+  '비밀게시판',
+  '정보게시판',
+  '1학년게시판',
+  '2학년게시판',
+  '3학년게시판',
 ];
 
 export default function BoardSelectModal({
@@ -30,88 +27,48 @@ export default function BoardSelectModal({
   onClose,
   selected,
   onSelect,
-}: BoardSelectModalProps) {
-  const [favorites, setFavorites] = useAtom(favoriteBoardsAtom);
-
-  const toggleFavorite = (key: string) => {
-    setFavorites((prev) =>
-      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
-    );
-  };
-
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
+  favorites,
+  toggleFavorite,
+}: Props) {
   return (
-    <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl pt-4 pb-6 px-5 animate-slide-up">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-base font-semibold">게시판 선택</h2>
-          <button onClick={onClose}>
-            <XMarkIcon className="w-6 h-6 text-gray-400" />
-          </button>
-        </div>
-
-        <ul className="space-y-3">
-          {boards.map((board) => {
-            const isFavorite = favorites.includes(board.key);
-            return (
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+      <div className="fixed inset-0 flex items-center justify-center">
+        <Dialog.Panel className="w-80 rounded-lg bg-white p-4">
+          <div className="flex justify-between items-center mb-2">
+            <Dialog.Title className="text-lg font-bold">게시판 선택</Dialog.Title>
+            <button onClick={onClose}>
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          </div>
+          <ul className="space-y-2">
+            {boardLabels.map((label) => (
               <li
-                key={board.key}
-                className="flex items-center justify-between cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-xl"
-                onClick={() => {
-                  onSelect(board.key);
-                  onClose();
-                }}
+                key={label}
+                className={`p-2 rounded-md cursor-pointer ${
+                  selected === label ? 'bg-blue-100' : 'hover:bg-gray-100'
+                }`}
+                onClick={() => onSelect(label)}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex justify-between items-center">
+                  <span>{label}</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleFavorite(board.key);
+                      toggleFavorite(label);
                     }}
-                  >
-                    {isFavorite ? (
-                      <StarSolidIcon className="w-5 h-5 text-yellow-400" />
-                    ) : (
-                      <StarOutlineIcon className="w-5 h-5 text-gray-400" />
-                    )}
-                  </button>
-                  <span
                     className={`text-sm ${
-                      selected === board.key ? 'font-bold text-blue-500' : 'text-gray-800'
+                      favorites.includes(label) ? 'text-yellow-500' : 'text-gray-400'
                     }`}
                   >
-                    {board.label}
-                  </span>
+                    ★
+                  </button>
                 </div>
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+        </Dialog.Panel>
       </div>
-
-      <style jsx>{`
-        .animate-slide-up {
-          animation: slideUp 0.3s ease-out forwards;
-        }
-        @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-          }
-          to {
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-    </div>
+    </Dialog>
   );
 }

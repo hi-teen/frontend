@@ -14,7 +14,7 @@ export default function SignupCompletePage() {
   const [isSubmitting, setIsSubmitting] = useState(true);
   const [error, setError] = useState('');
   const [nickname, setNickname] = useState('');
-  const calledRef = useRef(false); // ← 중복 호출 방지용
+  const calledRef = useRef(false); // 중복 호출 방지용
 
   useEffect(() => {
     const submit = async () => {
@@ -28,10 +28,7 @@ export default function SignupCompletePage() {
         // 로그인
         await loginApi(form.email, form.password);
 
-        // 백업용 정보 저장
-        localStorage.setItem('signupProfile', JSON.stringify(form));
-
-        // 사용자 정보 받아오기
+        // 사용자 정보 받아오기 (email + signupProfile 기반)
         const userInfo = await fetchMe();
         setUser(userInfo);
         setNickname(userInfo.nickname);

@@ -1,5 +1,5 @@
 'use client';
 
-import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 
-export const favoriteBoardsAtom = atom<string[]>(['free', 'info']);
+export const favoriteBoardsAtom = atomWithStorage<string[]>('favoriteBoards', []);

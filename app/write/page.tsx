@@ -23,10 +23,15 @@ export default function PostWritePage() {
   const [content, setContent] = useState('');
 
   const toggleFavorite = (board: string) => {
-    setFavorites((prev) =>
-      prev.includes(board) ? prev.filter((b) => b !== board) : [...prev, board]
-    );
+    setFavorites((prev) => {
+      const updated = prev.includes(board)
+        ? prev.filter((b) => b !== board)
+        : [...prev, board];
+      localStorage.setItem('favoriteBoards', JSON.stringify(updated));
+      return updated;
+    });
   };
+  
 
   const handleSubmit = async () => {
     const token = localStorage.getItem('accessToken');
@@ -49,6 +54,7 @@ export default function PostWritePage() {
         body: JSON.stringify({
           title,
           content,
+          board: selectedBoard,
         }),
       });
 
@@ -69,7 +75,6 @@ export default function PostWritePage() {
 
   return (
     <div className="relative max-w-lg mx-auto bg-white min-h-screen pb-[128px]">
-      {/* 상단 헤더 */}
       <div className="flex items-center justify-between px-4 py-4 border-b">
         <button onClick={() => router.back()}>
           <ChevronLeftIcon className="w-5 h-5 text-gray-500" />
@@ -78,7 +83,6 @@ export default function PostWritePage() {
         <div className="w-5 h-5" />
       </div>
 
-      {/* 게시판 선택 */}
       <div className="px-4 pt-4">
         <button
           onClick={() => setIsModalOpen(true)}
@@ -88,7 +92,6 @@ export default function PostWritePage() {
         </button>
       </div>
 
-      {/* 제목 입력 */}
       <div className="px-4 mt-4">
         <input
           type="text"
@@ -99,7 +102,6 @@ export default function PostWritePage() {
         />
       </div>
 
-      {/* 본문 입력 */}
       <div className="px-4 mt-4">
         <textarea
           placeholder="내용을 입력하세요"
@@ -109,18 +111,15 @@ export default function PostWritePage() {
         />
       </div>
 
-      {/* 등록 버튼 (하단 고정) */}
-<div className="fixed bottom-0 left-0 right-0 px-4 pb-6 bg-white z-50">
-  <button
-    onClick={handleSubmit}
-    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg"
-  >
-    등록
-  </button>
-</div>
+      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 bg-white z-50">
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg"
+        >
+          등록
+        </button>
+      </div>
 
-
-      {/* 하단 고정 안내 문구 */}
       <div className="fixed bottom-[90px] left-0 right-0 px-4 z-40">
         <div className="text-xs text-gray-500 p-4 rounded-t-xl max-w-lg mx-auto">
           <ul className="list-disc pl-4 space-y-1">
@@ -131,7 +130,6 @@ export default function PostWritePage() {
         </div>
       </div>
 
-      {/* 게시판 모달 */}
       <BoardSelectModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

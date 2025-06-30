@@ -12,6 +12,7 @@ export interface SignupFormData {
 }
 
 export interface UserInfo {
+  id: number;
   email: string;
   name: string;
   nickname: string;
@@ -34,13 +35,11 @@ export const loginApi = async (email: string, password: string): Promise<string>
     throw new Error(text || '로그인 실패');
   }
 
-  // 서버 응답은 토큰
   localStorage.setItem('accessToken', text);
   return text;
 };
 
-// 로그인된 사용자 정보 가져오기
-// 로그인된 사용자 정보 가져오기
+// 로그인된 사용자 정보 가져오기 
 export const fetchMe = async (): Promise<UserInfo> => {
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('토큰 없음');
@@ -51,27 +50,22 @@ export const fetchMe = async (): Promise<UserInfo> => {
     },
   });
 
-  const text = await res.text();
+  const contentType = res.headers.get('Content-Type');
 
   if (!res.ok) {
-    try {
-      const json = JSON.parse(text);
-      const msg = json?.header?.message || '유저 정보 가져오기 실패';
-      throw new Error(msg);
-    } catch {
-      throw new Error(text || '유저 정보 가져오기 실패');
-    }
+    const text = await res.text();
+    throw new Error(text || '유저 정보 가져오기 실패');
   }
 
-  // 서버가 이메일만 주는 경우
-  const emailMatch = text.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-  const email = emailMatch?.[1] || text;
+  const emailText = await res.text();
+  const match = emailText.match(/사용자:\s*(.+)$/);
+  const email = match ? match[1] : '';
 
-  // fallback: 회원가입 시 저장해둔 정보를 보완
   const saved = localStorage.getItem('signupProfile');
   const backup = saved ? JSON.parse(saved) : {};
 
   return {
+    id: 0,
     email,
     name: backup.name ?? '',
     nickname: backup.nickname ?? '',
@@ -102,6 +96,18 @@ export async function signUpApi(form: SignupFormData): Promise<UserInfo> {
       throw new Error(text || '회원가입 실패');
     }
   }
+
+  // 회원가입 정보 저장
+  localStorage.setItem(
+    'signupProfile',
+    JSON.stringify({
+      name: form.name,
+      nickname: form.nickname,
+      school: form.school,
+      gradeNumber: form.gradeNumber,
+      classNumber: form.classNumber,
+    })
+  );
 
   try {
     return JSON.parse(text);

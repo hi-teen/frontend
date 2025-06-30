@@ -12,7 +12,12 @@ export interface CommentItemType {
   content: string;
   anonymousNumber: number;
   createdDate: string;
-  replies: ReplyItemType[];
+  replies: {
+    replyId: number;
+    content: string;
+    createdDate?: string;
+    anonymousNumber?: number;
+  }[];
 }
 
 export const commentListAtom = atom<CommentItemType[]>([]);

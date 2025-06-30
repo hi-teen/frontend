@@ -20,7 +20,7 @@ export default function BoardPage() {
     const loadBoards = async () => {
       try {
         const data = await fetchBoards();
-        setBoards(data);
+        setBoards(data); // 서버에서 받은 board 값도 이미 한글이어야 함
       } catch (e) {
         console.error('[게시글 목록 불러오기 오류]', e);
       }
@@ -34,11 +34,15 @@ export default function BoardPage() {
       ? allBoards
       : allBoards.filter((post) => post.board === selected);
 
-  const toggleFavorite = (board: string) => {
-    setFavorites((prev) =>
-      prev.includes(board) ? prev.filter((b) => b !== board) : [...prev, board]
-    );
-  };
+      const toggleFavorite = (board: string) => {
+        setFavorites((prev) => {
+          const updated = prev.includes(board)
+            ? prev.filter((b) => b !== board)
+            : [...prev, board];
+          localStorage.setItem('favoriteBoards', JSON.stringify(updated));
+          return updated;
+        });
+      };      
 
   return (
     <main className="max-w-lg mx-auto bg-gray-50 pb-24">
@@ -49,7 +53,7 @@ export default function BoardPage() {
         favorites={favorites}
         toggleFavorite={toggleFavorite}
       />
-      <PostList posts={filteredPosts} />
+      <PostList posts={filteredPosts} selectedBoard={selected} />
       <BoardSelectModal
         isOpen={open}
         onClose={() => setOpen(false)}

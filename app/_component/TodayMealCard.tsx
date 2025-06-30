@@ -24,6 +24,16 @@ export default function TodayMealCard({ monthMeals }: TodayMealCardProps) {
     startX.current = e.touches[0].clientX;
   };
 
+  if (monthMeals.length === 0) {
+    return (
+      <div className="mt-4 px-4 text-sm text-gray-500">
+        <div className="bg-white border p-4 rounded-xl shadow">
+          이번 달 급식 정보가 없습니다.
+        </div>
+      </div>
+    );
+  }
+
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (startX.current === null) return;
 

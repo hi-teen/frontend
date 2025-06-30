@@ -1,8 +1,9 @@
 'use client';
 
-import { atom } from 'jotai';
+import { atom, useAtom } from 'jotai';
 
 export interface UserInfo {
+  id: number;
   email: string;
   name: string;
   nickname: string;
@@ -12,3 +13,5 @@ export interface UserInfo {
 }
 
 export const userAtom = atom<UserInfo | null>(null);
+
+export const useUserAtom = () => useAtom(userAtom);

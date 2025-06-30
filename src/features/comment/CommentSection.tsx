@@ -16,6 +16,8 @@ import {
   ArrowUturnRightIcon,
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { sendAnonymousMessage } from '@/shared/api/message';
 
 interface CommentSectionProps {
   boardId: number;
@@ -27,6 +29,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
   const [comment, setComment] = useAtom(newCommentAtom);
   const [replyTo, setReplyTo] = useAtom(replyTargetAtom);
   const [replyContent, setReplyContent] = useAtom(replyCommentAtom);
+  const router = useRouter();
 
   useEffect(() => {
     fetchComments(boardId)
@@ -103,15 +106,31 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
     }
   };
 
+  const handleSendMessage = async (commentId: number, anonymousNumber: number) => {
+    const content = prompt('쪽지 내용을 입력하세요');
+    if (!content || !content.trim()) return;
+  
+    try {
+      const room = await sendAnonymousMessage({
+        boardId,
+        commentId,
+        anonymousNumber,
+        content,
+      });
+      if (!room || !room.roomId) throw new Error('roomId 없음');
+      router.push(`/messages/${room.roomId}`);
+    } catch (e) {
+      console.error('쪽지 전송 실패', e);
+      alert('쪽지를 보내는 데 실패했습니다.');
+    }
+  };
+  
+
   return (
     <section className="bg-white">
-      {/* 댓글 리스트 */}
       <div className="space-y-6">
         {comments.map((c) => (
-          <div
-            key={c.commentId}
-            className="px-4 border-t border-gray-200 pt-4 relative"
-          >
+          <div key={c.commentId} className="px-4 border-t border-gray-200 pt-4 relative">
             <div className="absolute top-2 right-4 flex gap-3 text-gray-400">
               <button>
                 <HeartIcon className="w-4 h-4" />
@@ -119,9 +138,11 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
               <button onClick={() => setReplyTo(c.commentId)}>
                 <ArrowUturnRightIcon className="w-4 h-4" />
               </button>
-              <button>
-                <PaperAirplaneIcon className="w-4 h-4" />
-              </button>
+              {c.anonymousNumber != null && (
+                <button onClick={() => handleSendMessage(c.commentId, c.anonymousNumber)}>
+                  <PaperAirplaneIcon className="w-4 h-4" />
+                </button>
+              )}
             </div>
             <div className="flex items-start gap-2 text-sm text-gray-800">
               <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center mt-1">
@@ -129,22 +150,13 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">
-                    익명{c.anonymousNumber ?? 0}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {c.createdDate ?? ''}
-                  </span>
+                  <span className="font-semibold">익명{c.anonymousNumber ?? 0}</span>
+                  <span className="text-xs text-gray-400">{c.createdDate ?? ''}</span>
                 </div>
-                <p className="mt-1 text-sm text-black">
-                  {c.content ?? ''}
-                </p>
+                <p className="mt-1 text-sm text-black">{c.content ?? ''}</p>
 
                 {replyTo === c.commentId && (
-                  <form
-                    onSubmit={(e) => handleReplySubmit(e, c.commentId)}
-                    className="mt-2 flex gap-2"
-                  >
+                  <form onSubmit={(e) => handleReplySubmit(e, c.commentId)} className="mt-2 flex gap-2">
                     <input
                       type="text"
                       value={replyContent}
@@ -152,10 +164,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
                       placeholder="대댓글을 입력하세요"
                       className="flex-1 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <button
-                      type="submit"
-                      className="text-blue-500 font-semibold text-sm px-3"
-                    >
+                    <button type="submit" className="text-blue-500 font-semibold text-sm px-3">
                       작성
                     </button>
                   </form>
@@ -175,21 +184,21 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
                           <button>
                             <ArrowUturnRightIcon className="w-4 h-4" />
                           </button>
-                          <button>
-                            <PaperAirplaneIcon className="w-4 h-4" />
-                          </button>
+                          {reply.anonymousNumber != null && (
+                            <button
+                              onClick={() => handleSendMessage(c.commentId, reply.anonymousNumber!)}
+                            >
+                              <PaperAirplaneIcon className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-sm text-blue-600">
                             익명{reply.anonymousNumber ?? 0}
                           </span>
-                          <span className="text-xs text-gray-400">
-                            {reply.createdDate ?? ''}
-                          </span>
+                          <span className="text-xs text-gray-400">{reply.createdDate ?? ''}</span>
                         </div>
-                        <p className="text-sm text-gray-800 mt-1">
-                          {reply.content ?? ''}
-                        </p>
+                        <p className="text-sm text-gray-800 mt-1">{reply.content ?? ''}</p>
                       </div>
                     ))}
                   </div>
@@ -200,7 +209,6 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
         ))}
       </div>
 
-      {/* 댓글 입력창 */}
       <form
         onSubmit={handleCommentSubmit}
         className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t px-4 py-3 flex gap-2 z-50"
@@ -212,10 +220,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
           placeholder="댓글을 입력하세요"
           className="flex-1 border rounded-full px-4 py-2 text-sm outline-none"
         />
-        <button
-          type="submit"
-          className="text-blue-500 font-semibold text-sm px-2"
-        >
+        <button type="submit" className="text-blue-500 font-semibold text-sm px-2">
           작성
         </button>
       </form>
