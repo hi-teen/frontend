@@ -2,13 +2,15 @@ export interface BoardItem {
     id: number;
     title: string;
     content: string;
-    board: string; // 게시판 구분을 위한 필드
+    writer: string;
+    category: string;   
+    categoryLabel: string;
     loveCount: number;
     scrapCount: number;
     createdDate: string;
   }
   
-  //게시글 전체 조회
+  // 전체 게시글 목록 조회
   export const fetchBoards = async (): Promise<BoardItem[]> => {
     const token = localStorage.getItem('accessToken');
     if (!token) throw new Error('토큰 없음');
@@ -25,9 +27,9 @@ export interface BoardItem {
   
     return res.json();
   };
-
+  
   // 게시글 상세 조회
-export const fetchBoardDetail = async (boardId: number) => {
+  export const fetchBoardDetail = async (boardId: number): Promise<BoardItem> => {
     const token = localStorage.getItem('accessToken');
     if (!token) throw new Error('토큰 없음');
   
@@ -39,10 +41,10 @@ export const fetchBoardDetail = async (boardId: number) => {
   
     if (!res.ok) throw new Error('상세 게시글 조회 실패');
   
-    return res.json(); // { id, title, content, loveCount, scrapCount, createdDate }
+    return res.json();
   };
-
-export const toggleLove = async (boardId: number) => {
+  
+  export const toggleLove = async (boardId: number) => {
     const token = localStorage.getItem('accessToken');
     if (!token) throw new Error('토큰 없음');
   
@@ -75,7 +77,7 @@ export const toggleLove = async (boardId: number) => {
   };
   
   // 내가 작성한 게시글 목록 조회
-export const fetchMyPosts = async (): Promise<BoardItem[]> => {
+  export const fetchMyPosts = async (): Promise<BoardItem[]> => {
     const token = localStorage.getItem('accessToken');
     if (!token) throw new Error('토큰 없음');
   
@@ -89,6 +91,6 @@ export const fetchMyPosts = async (): Promise<BoardItem[]> => {
       throw new Error('내 글 목록 불러오기 실패');
     }
   
-    return res.json(); // BoardItem[]
+    return res.json();
   };
   

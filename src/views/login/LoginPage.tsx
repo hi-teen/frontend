@@ -23,14 +23,16 @@ export default function LoginPage() {
   const canLogin = isEmailValid && isPasswordValid;
 
   const handleLogin = async () => {
+    setError('');
     try {
-      // 로그인 후 accessToken 저장
-      const token = await loginApi(email, password);
-      setAccessToken(token); 
+      // 로그인 후 accessToken, refreshToken 반환받기
+      const { accessToken, refreshToken } = await loginApi(email, password);
+
+      setAccessToken(accessToken); // Jotai에도 문자열만
+      // localStorage에는 loginApi가 이미 저장함
 
       // 사용자 정보 불러오기
       const me = await fetchMe();
-      console.log('로그인된 사용자:', me);
       setUser(me);
 
       // 홈으로 이동

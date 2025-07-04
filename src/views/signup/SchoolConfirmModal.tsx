@@ -6,9 +6,10 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  schoolName?: string;
 }
 
-export default function SchoolConfirmModal({ isOpen, onClose, onConfirm }: Props) {
+export default function SchoolConfirmModal({ isOpen, onClose, onConfirm, schoolName }: Props) {
   if (!isOpen) return null;
 
   return (
@@ -20,8 +21,12 @@ export default function SchoolConfirmModal({ isOpen, onClose, onConfirm }: Props
         <div className="flex items-center gap-3 mb-6">
           <Image src="/school.png" alt="학교" width={28} height={28} />
           <div>
-            <p className="text-xs text-gray-500">경기도 부천시</p>
-            <p className="text-sm font-semibold">한국고등학교</p>
+            <p className="text-xs text-gray-500">
+              {schoolName ? '' : '학교를 선택해주세요.'}
+            </p>
+            <p className="text-sm font-semibold">
+              {schoolName ?? '학교명 없음'}
+            </p>
           </div>
         </div>
 

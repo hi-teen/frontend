@@ -9,9 +9,8 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { boardListAtom } from '@/entities/auth/model/boardAtom';
 
 export default function BoardPage() {
-  const [selected, setSelected] = useState('전체');
+  const [selected, setSelected] = useState('ALL'); // key 기준!
   const [open, setOpen] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>([]);
 
   const setBoards = useSetAtom(boardListAtom);
   const allBoards = useAtomValue(boardListAtom);
@@ -20,50 +19,36 @@ export default function BoardPage() {
     const loadBoards = async () => {
       try {
         const data = await fetchBoards();
-        setBoards(data); // 서버에서 받은 board 값도 이미 한글이어야 함
+        setBoards(data);
       } catch (e) {
         console.error('[게시글 목록 불러오기 오류]', e);
       }
     };
-
     loadBoards();
   }, [setBoards]);
 
+  // 필터링은 무조건 영문 key 기준
   const filteredPosts =
-    selected === '전체'
+    selected === 'ALL'
       ? allBoards
-      : allBoards.filter((post) => post.board === selected);
-
-      const toggleFavorite = (board: string) => {
-        setFavorites((prev) => {
-          const updated = prev.includes(board)
-            ? prev.filter((b) => b !== board)
-            : [...prev, board];
-          localStorage.setItem('favoriteBoards', JSON.stringify(updated));
-          return updated;
-        });
-      };      
+      : allBoards.filter((post) => post.category === selected);
 
   return (
     <main className="max-w-lg mx-auto bg-gray-50 pb-24">
       <BoardHeader
         selected={selected}
         onOpen={() => setOpen(true)}
-        onSelectBoard={(board) => setSelected(board)}
-        favorites={favorites}
-        toggleFavorite={toggleFavorite}
+        onSelectBoard={(key) => setSelected(key)}
       />
       <PostList posts={filteredPosts} selectedBoard={selected} />
       <BoardSelectModal
         isOpen={open}
         onClose={() => setOpen(false)}
         selected={selected}
-        onSelect={(board) => {
-          setSelected(board);
+        onSelect={(key) => {
+          setSelected(key);
           setOpen(false);
         }}
-        favorites={favorites}
-        toggleFavorite={toggleFavorite}
       />
     </main>
   );

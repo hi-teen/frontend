@@ -6,7 +6,6 @@ interface TimeTableItem {
   period: number;
   subject: string;
 }
-
 interface TimeTableData {
   [day: string]: TimeTableItem[];
 }
@@ -23,8 +22,16 @@ const times = [
   '16:00 - 16:50',
 ];
 
+// 오늘 요일이 몇 번째 인덱스인지 구하기 (월요일=0, 금요일=4, 아니면 -1)
+function getTodayIndex() {
+  const day = new Date().getDay();
+  if (day >= 1 && day <= 5) return day - 1; // 1=월, 2=화, ..., 5=금
+  return -1; // 주말(토,일)엔 표시하지 않음
+}
+
 export default function SchedulePage() {
   const [timetable, setTimetable] = useState<string[][]>([]);
+  const todayIdx = getTodayIndex();
 
   useEffect(() => {
     const fetchTimetable = async () => {
@@ -75,7 +82,12 @@ export default function SchedulePage() {
         {weekdays.map((day, i) => (
           <div
             key={i}
-            className="bg-gray-100 text-center text-xs font-bold text-gray-700 py-2 rounded-md mx-[2px]"
+            className={
+              "text-center text-xs font-bold py-2 rounded-md mx-[2px] " +
+              (i === todayIdx
+                ? "bg-[#2563eb] text-white shadow-sm"
+                : "bg-gray-100 text-gray-700")
+            }
           >
             {day}
           </div>
@@ -86,14 +98,37 @@ export default function SchedulePage() {
       {periods.map((period, i) => (
         <div key={i} className="grid grid-cols-[48px_repeat(5,1fr)] ">
           {/* 교시 + 시간 */}
-          <div className="flex flex-col items-center justify-center text-sm font-medium text-gray-700 py-3">
+          <div className="flex flex-col items-center justify-center text-xs font-medium text-gray-700 py-3">
             <div>{period}</div>
             <div className="text-[7px] text-gray-400">{times[i]}</div>
           </div>
           {/* 과목 */}
           {timetable[i]?.map((subject, j) => (
-            <div key={`${i}-${j}`} className="flex items-center justify-center py-3">
-              <span className="px-3 py-2 text-sm font-bold bg-[#E9F0FF] text-black rounded-md">
+            <div
+              key={`${i}-${j}`}
+              className="flex items-center justify-center py-2"
+            >
+              <span
+                className={
+                  "flex items-center justify-center text-xs font-bold rounded-md " +
+                  (j === todayIdx
+                    ? "bg-[#bed1fa] text-gray-800"
+                    : "bg-[#E9F0FF] text-gray-700")
+                }
+                style={{
+                  width: 50,
+                  height: 34,
+                  minWidth: 20,
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  fontWeight: 700,
+                  fontSize: '11px',
+                  letterSpacing: '-0.5px',
+                }}
+                title={subject}
+              >
                 {subject || ''}
               </span>
             </div>

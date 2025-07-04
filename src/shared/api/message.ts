@@ -1,90 +1,39 @@
-import axios from 'axios';
+import axios from './axiosInstance';
 
 export async function sendAnonymousMessage({
-  boardId,
-  commentId,
-  anonymousNumber,
-  content,
-}: {
-  boardId: number;
-  commentId?: number;
-  anonymousNumber: number;
-  content: string;
-}) {
-  const token = localStorage.getItem('accessToken');
-  if (!token) {
-    throw new Error('로그인이 필요합니다.');
-  }
-
-  const saved = localStorage.getItem('signupProfile');
-  const backup = saved ? JSON.parse(saved) : {};
-  const senderId = backup.memberId;
-
-  if (!senderId) {
-    throw new Error('senderId가 없습니다.');
-  }
-
-  const body: Record<string, any> = {
     boardId,
-    anonymousNumber,
+    commentId,
     content,
-    senderId,
-  };
-
-  if (commentId !== undefined) {
-    body.commentId = commentId;
+  }: {
+    boardId: number;
+    commentId?: number;
+    content: string;
+  }) {
+    const payload: any = { boardId, content };
+    if (commentId) payload.commentId = commentId;
+    const res = await fetch('/api/v1/messages/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return (await res.json()).data;
   }
 
-  const res = await axios.post('https://hiteen.site/api/v1/messages/send', body, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  return res.data?.data;
-}
-
-export async function fetchMessages(roomId: number) {
-  const token = localStorage.getItem('accessToken');
-  if (!token) throw new Error('로그인이 필요합니다.');
-
-  const res = await axios.get(`https://hiteen.site/api/v1/messages/room/${roomId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return res.data.data;
-}
-
-export async function pollMessages(roomId: number, lastMessageId: number) {
-  const token = localStorage.getItem('accessToken');
-  if (!token) throw new Error('로그인이 필요합니다.');
-
-  const res = await axios.get(`https://hiteen.site/api/v1/messages/room/${roomId}/poll`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    params: { lastMessageId },
-  });
-
-  return res.data.data;
-}
-
-export async function sendMessageToRoom(roomId: number, content: string, senderId: number) {
-  const token = localStorage.getItem('accessToken');
-  if (!token) throw new Error('로그인이 필요합니다.');
-
-  const res = await axios.post(`https://hiteen.site/api/v1/messages/room/${roomId}/send`, {
+// 기존방 메시지 전송
+export async function sendMessageToRoom(
+  roomId: number,
+  senderId: number,
+  content: string
+) {
+  const res = await axios.post(`/api/v1/messages/room/${roomId}/send`, {
     senderId,
     content,
-  }, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
   });
+  return res.data.data;
+}
 
+// 채팅방 메시지 조회
+export async function fetchMessages(roomId: number) {
+  const res = await axios.get(`/api/v1/messages/room/${roomId}`);
   return res.data.data;
 }

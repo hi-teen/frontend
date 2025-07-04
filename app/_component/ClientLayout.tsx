@@ -8,7 +8,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const hideNavbar =
     pathname.startsWith("/signup") ||
     pathname.startsWith("/login") ||
-    pathname.startsWith("/board/");
+    pathname.startsWith("/board/") ||
+    pathname.startsWith("/write") ;
 
   return (
     <div className="min-h-[100dvh] bg-gray-50">

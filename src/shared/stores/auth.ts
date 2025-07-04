@@ -9,7 +9,7 @@ export const authUserAtom = atom<{
   email: string;
   name: string;
   nickname: string;
-  school: string;
+  schoolId: number;
   gradeNumber: number;
   classNumber: number;
 } | null>(null);

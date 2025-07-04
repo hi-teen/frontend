@@ -4,7 +4,8 @@ import { atom } from 'jotai';
 
 export const signupFormAtom = atom({
   name: '',
-  school: '',
+  schoolId: 0,
+  schoolName: '', 
   gradeNumber: 0,
   classNumber: 0,
   email: '',

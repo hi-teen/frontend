@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAtom } from 'jotai';
@@ -14,7 +12,7 @@ export default function SignupCompletePage() {
   const [isSubmitting, setIsSubmitting] = useState(true);
   const [error, setError] = useState('');
   const [nickname, setNickname] = useState('');
-  const calledRef = useRef(false); // 중복 호출 방지용
+  const calledRef = useRef(false);
 
   useEffect(() => {
     const submit = async () => {
@@ -22,13 +20,13 @@ export default function SignupCompletePage() {
       calledRef.current = true;
 
       try {
-        // 회원가입
+        // 1. 회원가입
         await signUpApi(form);
 
-        // 로그인
+        // 2. 로그인 → accessToken, refreshToken 저장
         await loginApi(form.email, form.password);
 
-        // 사용자 정보 받아오기 (email + signupProfile 기반)
+        // 3. 유저 정보 받아오기 (토큰 만료 시 자동 재발급)
         const userInfo = await fetchMe();
         setUser(userInfo);
         setNickname(userInfo.nickname);

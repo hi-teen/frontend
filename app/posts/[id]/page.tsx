@@ -86,7 +86,7 @@ export default function PostDetailPage() {
       <div className="px-4 pt-4">
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
           <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
-            <Image src="/usericon.png" alt="user" width={14} height={14} />
+            <Image src="/profile.png" alt="user" width={14} height={14} />
           </div>
           <span className="font-semibold text-sm text-black">익명</span>
           <span className="text-gray-400 text-xs">· {detail.createdDate}</span>

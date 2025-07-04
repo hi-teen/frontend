@@ -39,7 +39,7 @@ export default function MyLikesPage() {
               key={post.id}
               id={post.id}
               title={post.title}
-              board={post.board ?? '자유게시판'}
+              board={post.categoryLabel ?? '자유게시판'}
               content={post.content}
               likes={post.loveCount}
               comments={0}

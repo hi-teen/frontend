@@ -14,18 +14,26 @@ export default function MyPostsPage() {
 
   useEffect(() => {
     const loadPosts = async () => {
-      try {
-        const data = await fetchMyPosts();
-        setPosts(data);
-      } catch (err) {
-        console.error('내 글 조회 실패:', err);
-        alert('내 글을 불러오는 데 실패했습니다.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPosts();
+        try {
+          const token = localStorage.getItem('accessToken');
+          console.log('[DEBUG] accessToken:', token);
+          if (!token) {
+            alert('토큰 없음(로그인 필요)');
+            setLoading(false);
+            return;
+          }
+          const data = await fetchMyPosts(); // 이미 내부에서 토큰 체크하니 사실 중복이긴 함
+          console.log('[DEBUG] 내 글 데이터:', data);
+          setPosts(data);
+        } catch (err) {
+          console.error('내 글 조회 실패:', err);
+          alert('내 글을 불러오는 데 실패했습니다.');
+        } finally {
+          setLoading(false);
+        }
+      };
+    
+      loadPosts();
   }, []);
 
   return (
@@ -49,11 +57,11 @@ export default function MyPostsPage() {
               key={post.id}
               id={post.id}
               title={post.title}
-              board={post.board}
+              board={post.categoryLabel ?? '자유게시판'}
               content={post.content}
               likes={post.loveCount}
               comments={0}
-              views={0} 
+              views={0}
               date={post.createdDate}
             />
           ))}

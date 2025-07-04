@@ -5,7 +5,8 @@ import { atom } from 'jotai';
 export interface SignupFormData {
   name: string;
   nickname: string;
-  school: string;
+  schoolId: number;
+  schoolName?: string;
   gradeNumber: number;
   classNumber: number;
   email: string;
@@ -16,7 +17,8 @@ export interface SignupFormData {
 export const signupAtom = atom<SignupFormData>({
   name: '',
   nickname: '',
-  school: '',
+  schoolId: 0,
+  schoolName: '',
   gradeNumber: 0,
   classNumber: 0,
   email: '',

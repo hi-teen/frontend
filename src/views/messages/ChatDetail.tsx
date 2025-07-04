@@ -1,82 +1,117 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { fetchMessages, sendMessageToRoom } from '@/shared/api/message';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { sendAnonymousMessage, sendMessageToRoom, fetchMessages } from '@/shared/api/message';
+import { useUserId } from '@/entities/auth/hooks/useUserId';
 
 export default function ChatDetailPage() {
+  // URL 파라미터 (roomId는 [id], 그 외는 쿼리스트링)
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const roomId = Number(params.id);
+
+  // /messages/[id] 라우트면 roomId, /messages/chat?receiverId=... 면 roomId 없음
+  const roomId = params.id ? Number(params.id) : undefined;
+
+  // 쿼리스트링에서 받는 값들
+  const receiverId = Number(searchParams.get('receiverId'));
+  const boardId = Number(searchParams.get('boardId'));
+  const commentId = searchParams.get('commentId')
+    ? Number(searchParams.get('commentId'))
+    : undefined;
+
+  // 로그인 유저(memberId) 가져오기(커스텀 훅, 예시)
+  const senderId = useUserId() || 0;
+
+  // 채팅 상태
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
+  // roomId 있을 때 메시지 불러오기
   useEffect(() => {
-    if (!roomId) return;
-    fetchMessages(roomId)
-      .then((data) => setMessages(data))
-      .catch(console.error);
+    if (roomId) {
+      fetchMessages(roomId)
+        .then(setMessages)
+        .catch(console.error);
+    } else {
+      setMessages([]); // 임시방(처음 진입)일 땐 빈 배열
+    }
   }, [roomId]);
 
+  // 채팅 전송
   const handleSend = async () => {
     if (!message.trim()) return;
+    setLoading(true);
     try {
-      // senderId는 백엔드에서 자동 처리된다고 가정
-      await sendMessageToRoom(roomId, message, 0); // senderId는 필요시 제거
-      const newMessages = await fetchMessages(roomId);
-      setMessages(newMessages);
+      if (!roomId) {
+        // 첫 메시지: 방 생성 + 메시지 전송
+        const res = await sendAnonymousMessage({
+          boardId,
+          content: message,
+          commentId,
+        });
+        const { roomId: newRoomId } = res;
+        // 첫 메시지 후에는 새 roomId로 교체(리로드)
+        router.replace(`/messages/${newRoomId}`);
+      } else {
+        // 기존방: 메시지만 전송
+        await sendMessageToRoom(roomId, senderId, message);
+        const newMessages = await fetchMessages(roomId);
+        setMessages(newMessages);
+      }
       setMessage('');
     } catch (e) {
-      console.error('메시지 전송 실패', e);
+      alert('메시지 전송 실패');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="max-w-lg mx-auto h-screen flex flex-col bg-[#f8f8f8]">
-      {/* 상단 바 */}
+      {/* 상단바(뒤로가기 등, 필요시 추가) */}
       <div className="px-4 pt-4 flex justify-between items-center mb-2">
-        <button onClick={() => router.push('/messages')}>
-          <ArrowLeftIcon className="w-5 h-5 text-gray-400" />
+        <button onClick={() => router.back()}>
+          <span className="text-gray-400">{'<'} 뒤로</span>
         </button>
+        <span className="font-bold text-base">
+          {roomId ? `쪽지방 #${roomId}` : '새 쪽지'}
+        </span>
+        <span></span>
       </div>
-
-      {/* 메시지 목록 */}
+      {/* 채팅 메시지 리스트 */}
       <div className="flex-1 overflow-y-auto px-4 space-y-4 text-sm">
+        {messages.length === 0 && (
+          <div className="text-gray-400 text-center mt-8">아직 메시지가 없습니다.</div>
+        )}
         {messages.map((msg) => (
-          <div
-            key={msg.messageId}
-            className={`flex ${msg.isMine ? 'justify-end' : 'gap-2 items-end'}`}
-          >
-            {!msg.isMine && (
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mt-1">
-                <Image src="/usericon.png" alt="user" width={16} height={16} />
-              </div>
-            )}
-            <div className={msg.isMine ? 'text-right' : ''}>
-              {!msg.isMine && (
-                <p className="font-semibold mb-1">익명{msg.anonymousNumber ?? ''}</p>
-              )}
-              <div className="bg-white rounded-xl px-4 py-2 inline-block">{msg.content}</div>
-              <div className="text-[10px] text-gray-400 mt-1">{msg.createdDate}</div>
+          <div key={msg.messageId} className={`flex ${msg.senderId === senderId ? 'justify-end' : 'justify-start'}`}>
+            <div
+              className={`bg-white rounded-xl px-4 py-2 mb-1 max-w-xs ${
+                msg.senderId === senderId ? 'bg-blue-50' : ''
+              }`}
+            >
+              <span>{msg.content}</span>
             </div>
           </div>
         ))}
       </div>
-
       {/* 입력창 */}
-      <div className="fixed bottom-[88px] left-0 right-0 max-w-lg mx-auto bg-white border-t px-4 py-3 flex gap-2">
+      <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t px-4 py-3 flex gap-2">
         <input
           type="text"
           placeholder="메시지를 입력하세요"
-          className="flex-1 border rounded-full px-4 py-2 text-sm outline-none"
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          disabled={loading}
+          onChange={e => setMessage(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSend()}
+          className="flex-1 border rounded-full px-4 py-2 text-sm outline-none"
         />
         <button
           onClick={handleSend}
+          disabled={loading || !message.trim()}
           className="text-[#2269FF] font-semibold text-sm px-2"
         >
           전송

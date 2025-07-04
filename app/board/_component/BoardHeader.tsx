@@ -16,29 +16,25 @@ const SearchModal = dynamic(() => import('../../_component/SearchModal'), {
 }) as React.ComponentType<{ onClose: () => void }>;
 
 interface Props {
-  selected: string;
+  selected: string; // key ('ALL', 'FREE', ...)
   onOpen: () => void;
-  onSelectBoard: (board: string) => void;
-  favorites: string[];
-  toggleFavorite: (board: string) => void;
+  onSelectBoard: (key: string) => void;
 }
 
 const boards = [
-  { name: '전체', emoji: '📋' },
-  { name: '자유게시판', emoji: '😊' },
-  { name: '비밀게시판', emoji: '🤫' },
-  { name: '정보게시판', emoji: '💡' },
-  { name: '1학년게시판', emoji: '1️⃣' },
-  { name: '2학년게시판', emoji: '2️⃣' },
-  { name: '3학년게시판', emoji: '3️⃣' },
+  { key: 'ALL', name: '전체', emoji: '📋' },
+  { key: 'FREE', name: '자유게시판', emoji: '😊' },
+  { key: 'SECRET', name: '비밀게시판', emoji: '🤫' },
+  { key: 'INFORMATION', name: '정보게시판', emoji: '💡' },
+  { key: 'GRADE1', name: '1학년게시판', emoji: '1️⃣' },
+  { key: 'GRADE2', name: '2학년게시판', emoji: '2️⃣' },
+  { key: 'GRADE3', name: '3학년게시판', emoji: '3️⃣' },
 ];
 
 export default function BoardHeader({
   selected,
   onOpen,
   onSelectBoard,
-  favorites,
-  toggleFavorite,
 }: Props) {
   const [openSearch, setOpenSearch] = useState(false);
   const [showLeftFade, setShowLeftFade] = useState(false);
@@ -72,7 +68,6 @@ export default function BoardHeader({
             </Link>
             <span className='text-xl font-bold mt-1'>한국고등학교</span>
           </div>
-
           <div className='flex items-center gap-4 mt-3'>
             <Link href="/write">
               <PlusIcon className="w-6 h-6 text-gray-400 cursor-pointer" />
@@ -88,17 +83,16 @@ export default function BoardHeader({
             </button>
           </div>
         </div>
-
         <div className="relative mt-3">
           <div className="overflow-x-auto scrollbar-hide pr-6 pl-0" ref={scrollRef}>
             <div className="flex gap-2 min-w-max">
-              {boards.map(({ name, emoji }) => (
+              {boards.map(({ key, name, emoji }) => (
                 <button
-                  key={name}
-                  onClick={() => onSelectBoard(name)}
+                  key={key}
+                  onClick={() => onSelectBoard(key)}
                   className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm whitespace-nowrap border transition-all duration-150
                     ${
-                      selected === name
+                      selected === key
                         ? 'bg-blue-50 text-blue-600 border-blue-400 font-semibold'
                         : 'bg-gray-100 text-gray-600 border-transparent'
                     }`}
@@ -109,17 +103,13 @@ export default function BoardHeader({
               ))}
             </div>
           </div>
-
           {showLeftFade && (
             <div className="pointer-events-none absolute top-0 left-0 h-full w-6 bg-gradient-to-r from-gray-50 via-gray-50 to-transparent" />
           )}
-
           {showRightFade && (
             <div className="pointer-events-none absolute top-0 right-8 h-full w-6 bg-gradient-to-l from-gray-50 via-gray-50 to-transparent" />
           )}
-
           <div className="absolute top-0 right-0 h-full w-8 bg-gray-50 z-10 pointer-events-none" />
-
           <button
             onClick={onOpen}
             className="absolute top-1/2 right-1 -translate-y-1/2 z-20"
@@ -128,7 +118,6 @@ export default function BoardHeader({
           </button>
         </div>
       </header>
-
       {openSearch && <SearchModal onClose={() => setOpenSearch(false)} />}
     </>
   );

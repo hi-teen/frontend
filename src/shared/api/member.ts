@@ -4,7 +4,7 @@ export const signUp = async (payload: {
     passwordConfirm: string;
     name: string;
     nickname: string;
-    school: string;
+    schoolId: number;
     gradeNumber: number;
     classNumber: number;
   }) => {

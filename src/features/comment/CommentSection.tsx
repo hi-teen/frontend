@@ -106,16 +106,16 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
     }
   };
 
-  const handleSendMessage = async (commentId: number, anonymousNumber: number) => {
-    const content = prompt('쪽지 내용을 입력하세요');
-    if (!content || !content.trim()) return;
-  
+  // 쪽지: 클릭 시 바로 채팅방 이동
+  const handleSendMessage = async (
+    commentId: number,
+    anonymousNumber: number
+  ) => {
     try {
       const room = await sendAnonymousMessage({
         boardId,
         commentId,
-        anonymousNumber,
-        content,
+        content: ' ', 
       });
       if (!room || !room.roomId) throw new Error('roomId 없음');
       router.push(`/messages/${room.roomId}`);
@@ -124,7 +124,6 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
       alert('쪽지를 보내는 데 실패했습니다.');
     }
   };
-  
 
   return (
     <section className="bg-white">
@@ -145,8 +144,8 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
               )}
             </div>
             <div className="flex items-start gap-2 text-sm text-gray-800">
-              <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center mt-1">
-                <Image src="/usericon.png" alt="user" width={16} height={16} />
+              <div className="w-10 h-10 rounded-full flex items-center justify-center">
+                <Image src="/profile.png" alt="user" width={40} height={40} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -186,7 +185,9 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
                           </button>
                           {reply.anonymousNumber != null && (
                             <button
-                              onClick={() => handleSendMessage(c.commentId, reply.anonymousNumber!)}
+                              onClick={() =>
+                                handleSendMessage(c.commentId, reply.anonymousNumber!)
+                              }
                             >
                               <PaperAirplaneIcon className="w-4 h-4" />
                             </button>

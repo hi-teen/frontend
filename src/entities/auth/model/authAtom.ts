@@ -7,7 +7,7 @@ export interface UserInfo {
   email: string;
   name: string;
   nickname: string;
-  school: string;
+  schoolId: number;
   gradeNumber: number;
   classNumber: number;
 }

@@ -17,9 +17,15 @@ interface UserInfo {
   email: string;
   name: string;
   nickname: string;
-  school: string;
+  schoolId: number;
+  schoolName?: string;
   gradeNumber: number;
   classNumber: number;
+  school?: {
+    id: number;
+    schoolName: string;
+    [key: string]: any;
+  };
 }
 
 export default function ProfilePage() {
@@ -36,21 +42,65 @@ export default function ProfilePage() {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    // 좋아요한 글 불러오기
+    // 좋아요한 글 불러오기 (실패시 무시)
     fetch('https://hiteen.site/api/v1/loves/me', {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => {
-        if (!res.ok) throw new Error('좋아요 글 불러오기 실패');
-        return res.json();
-      })
+      .then((res) => (res.ok ? res.json() : []))
       .then(setLovedPosts)
-      .catch(console.error);
+      .catch(() => setLovedPosts([]));
 
-    // 사용자 정보 불러오기
+    // 사용자 정보 불러오기 (실패 또는 값 없음 시 signupProfile fallback)
     fetchMe()
-      .then(setUser)
-      .catch(console.error);
+      .then((data: UserInfo | null) => {
+        if (data && (data.name || data.nickname)) {
+          // school 필드 객체인 경우
+          if (typeof data.school === 'object' && data.school !== null) {
+            setUser({
+              ...data,
+              schoolId: data.school.id,
+              schoolName: data.school.schoolName,
+            });
+          } else {
+            setUser(data);
+          }
+        } else {
+          // fallback
+          const profileStr = localStorage.getItem('signupProfile');
+          if (profileStr) {
+            try {
+              const profile = JSON.parse(profileStr);
+              setUser({
+                ...profile,
+                email: profile.email ?? '',
+                schoolName: profile.schoolName ?? '',
+              });
+            } catch {
+              setUser(null);
+            }
+          } else {
+            setUser(null);
+          }
+        }
+      })
+      .catch(() => {
+        // fetchMe 실패시 fallback
+        const profileStr = localStorage.getItem('signupProfile');
+        if (profileStr) {
+          try {
+            const profile = JSON.parse(profileStr);
+            setUser({
+              ...profile,
+              email: profile.email ?? '',
+              schoolName: profile.schoolName ?? '',
+            });
+          } catch {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      });
   }, []);
 
   return (
@@ -62,7 +112,7 @@ export default function ProfilePage() {
             <Image src="/hiteen.svg" alt="HiTeen 로고" width={72} height={24} priority />
           </Link>
           {user && (
-            <span className="text-xl font-bold mt-1">{user.school}</span>
+            <span className="text-xl font-bold mt-1">{user.schoolName ?? '-'}</span>
           )}
         </div>
       </header>
@@ -71,18 +121,35 @@ export default function ProfilePage() {
       <div className="px-4 pt-4 pb-20 max-w-lg mx-auto bg-gray-50 space-y-6">
         {/* 프로필 박스 */}
         <div className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-              <Image src="/usericon.png" alt="user icon" width={24} height={24} />
+          {user ? (
+            <div className="flex items-center gap-3">
+             <div className="w-16 h-16 rounded-full flex items-center justify-center">
+              <Image
+                src="/profile.png"
+                alt="user icon"
+                width={60}
+                height={60}
+                className="object-cover"
+              />
             </div>
-            <div className="text-sm leading-tight">
-              <p className="font-semibold">{user?.name ?? '사용자'}</p>
-              <p className="text-gray-500">{user?.school ?? '-'}</p>
-              <p className="text-gray-400 text-xs">
-                {user ? `${user.gradeNumber}학년 ${user.classNumber}반` : ''}
-              </p>
+              <div className="text-sm leading-tight">
+                <p className="font-semibold">
+                  {user.name ?? '-'}
+                  {user.nickname ? (
+                    <span className="ml-2 text-xs text-blue-600">({user.nickname})</span>
+                  ) : null}
+                </p>
+                <p className="text-gray-500">{user.schoolName ?? '-'}</p>
+                <p className="text-gray-400 text-xs">{user.email ?? '-'}</p>
+                <p className="text-gray-400 text-xs">
+                  {(user.gradeNumber ? `${user.gradeNumber}학년 ` : '') +
+                    (user.classNumber ? `${user.classNumber}반` : '')}
+                </p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex-1 text-gray-400">로그인 정보를 불러올 수 없습니다.</div>
+          )}
           <button onClick={handleEdit} className="text-sm text-blue-500 font-semibold">
             수정
           </button>
