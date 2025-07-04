@@ -1,17 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAtom } from 'jotai';
+import { signupFormAtom } from '@/shared/stores/signup';
 
 export default function SignupEmailStep() {
   const router = useRouter();
+  const [form, setForm] = useAtom(signupFormAtom);
+
   const [email, setEmail] = useState('');
   const [isValid, setIsValid] = useState(false);
+
+  // 초기 렌더링 시 전역 상태의 이메일 불러오기
+  useEffect(() => {
+    if (form.email) {
+      setEmail(form.email);
+      setIsValid(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email));
+    }
+  }, [form.email]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
     setIsValid(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+  };
+
+  const handleNext = () => {
+    if (!isValid) return;
+
+    setForm((prev) => ({
+      ...prev,
+      email,
+    }));
+
+    router.push('/signup/step/password');
   };
 
   return (
@@ -35,7 +58,7 @@ export default function SignupEmailStep() {
 
       <button
         disabled={!isValid}
-        onClick={() => router.push('/signup/step/password')}
+        onClick={handleNext}
         className={`w-full mt-6 py-4 rounded-xl font-semibold text-white text-base ${
           isValid ? 'bg-[#2269FF]' : 'bg-gray-300'
         }`}

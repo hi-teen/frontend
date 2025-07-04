@@ -1,27 +1,30 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import { useAtom } from 'jotai';
+import { favoriteBoardsAtom } from '@/entities/auth/model/favoriteBoardsAtom';
 
-interface BoardSelectModalProps {
+interface BoardOption {
+  key: string;
+  label: string;
+}
+
+interface Props {
   isOpen: boolean;
   onClose: () => void;
   selected: string;
   onSelect: (board: string) => void;
-  favorites: string[];
-  toggleFavorite: (board: string) => void;
 }
 
-const boards = [
-  '전체게시판',
-  '자유게시판',
-  '비밀게시판',
-  '정보게시판',
-  '1학년게시판',
-  '2학년게시판',
-  '3학년게시판',
+const boardOptions: BoardOption[] = [
+  { key: 'FREE', label: '자유게시판' },
+  { key: 'SECRET', label: '비밀게시판' },
+  { key: 'INFORMATION', label: '정보게시판' },
+  { key: 'GRADE1', label: '1학년게시판' },
+  { key: 'GRADE2', label: '2학년게시판' },
+  { key: 'GRADE3', label: '3학년게시판' },
 ];
 
 export default function BoardSelectModal({
@@ -29,88 +32,69 @@ export default function BoardSelectModal({
   onClose,
   selected,
   onSelect,
-  favorites,
-  toggleFavorite,
-}: BoardSelectModalProps) {
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [isOpen]);
+}: Props) {
+  const [favoriteBoards, setFavoriteBoards] = useAtom(favoriteBoardsAtom);
 
-  if (!isOpen) return null;
+  const toggleFavorite = (key: string) => {
+    setFavoriteBoards((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
 
   return (
-    <div className="fixed inset-0 z-50">
-      {/* 배경 어둡게 */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-      />
-
-      {/* 슬라이드업 패널 */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl pt-4 pb-6 px-5 animate-slide-up">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-base font-semibold">게시판 선택</h2>
-          <button onClick={onClose}>
-            <XMarkIcon className="w-6 h-6 text-gray-400" />
-          </button>
-        </div>
-
-        <ul className="space-y-3">
-          {boards.map((board) => {
-            const isFavorite = favorites.includes(board);
-            return (
-              <li
-                key={board}
-                className="flex items-center justify-between cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-xl"
-                onClick={() => {
-                  onSelect(board);
-                  onClose();
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(board);
-                    }}
-                  >
-                    {isFavorite ? (
-                      <StarSolidIcon className="w-5 h-5 text-yellow-400" />
-                    ) : (
-                      <StarOutlineIcon className="w-5 h-5 text-gray-400" />
-                    )}
-                  </button>
-                  <span
-                    className={`text-sm ${
-                      selected === board ? 'font-bold text-blue-500' : 'text-gray-800'
+    <Transition show={isOpen} as={Fragment}>
+      <Dialog as="div" className="fixed inset-0 z-50" onClose={onClose}>
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-end justify-center">
+          <Transition.Child
+            as={Fragment}
+            enter="transition ease-out duration-200"
+            enterFrom="translate-y-full"
+            enterTo="translate-y-0"
+            leave="transition ease-in duration-150"
+            leaveFrom="translate-y-0"
+            leaveTo="translate-y-full"
+          >
+            <Dialog.Panel className="w-full max-w-md mx-auto rounded-t-2xl bg-white p-4 pb-8 shadow-lg">
+              <div className="flex justify-between items-center mb-2">
+                <Dialog.Title className="text-lg font-bold">게시판 선택</Dialog.Title>
+                <button onClick={onClose}>
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+              <ul className="space-y-2">
+                {boardOptions.map((board) => (
+                  <li
+                    key={board.key}
+                    className={`p-3 rounded-lg cursor-pointer flex items-center gap-2 ${
+                      selected === board.key ? 'bg-blue-100' : 'hover:bg-gray-100'
                     }`}
+                    onClick={() => onSelect(board.key)}
                   >
-                    {board}
-                  </span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      <style jsx>{`
-        .animate-slide-up {
-          animation: slideUp 0.3s ease-out forwards;
-        }
-        @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-          }
-          to {
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(board.key);
+                      }}
+                      className={`text-lg mr-1 ${
+                        favoriteBoards.includes(board.key)
+                          ? 'text-yellow-400'
+                          : 'text-gray-300'
+                      }`}
+                      aria-label="즐겨찾기"
+                      tabIndex={-1}
+                      type="button"
+                    >
+                      ★
+                    </button>
+                    <span className="flex-1 text-base">{board.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </Dialog.Panel>
+          </Transition.Child>
+        </div>
+      </Dialog>
+    </Transition>
   );
 }

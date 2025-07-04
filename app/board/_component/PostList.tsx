@@ -1,20 +1,14 @@
-import PostCard from '../../_component/PostCard';
+'use client';
 
-interface Post {
-  id: number;
-  title: string;
-  board: string;
-  content: string;
-  likes: number;
-  comments: number;
-  views: number;
-}
+import PostCard from '../../_component/PostCard';
+import type { BoardItem } from '@/shared/api/board';
 
 interface Props {
-  posts: Post[];
+  posts: BoardItem[];
+  selectedBoard: string;
 }
 
-export default function PostList({ posts }: Props) {
+export default function PostList({ posts, selectedBoard }: Props) {
   return (
     <div className="px-4 space-y-3">
       {posts.map((post) => (
@@ -22,11 +16,11 @@ export default function PostList({ posts }: Props) {
           key={post.id}
           id={post.id}
           title={post.title}
-          board={post.board}
+          board={selectedBoard === 'ALL' ? post.categoryLabel : ''}
           content={post.content}
-          likes={post.likes}
-          comments={post.comments}
-          views={post.views}
+          likes={post.loveCount}
+          comments={0}
+          views={0}
         />
       ))}
     </div>
