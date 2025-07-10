@@ -22,13 +22,15 @@ export interface SignupFormData {
 }
 
 export interface UserInfo {
-  id?: number; // 회원가입 직후엔 id 없을 수 있음
+  id?: number;
   email: string;
   name: string;
   nickname: string;
   gradeNumber: number;
   classNumber: number;
   school: SchoolInfo;
+  schoolId?: number;
+  schoolName?: string; 
 }
 
 // fetch 응답 안전하게 파싱

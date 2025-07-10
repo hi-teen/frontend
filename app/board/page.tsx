@@ -9,13 +9,14 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { boardListAtom } from '@/entities/auth/model/boardAtom';
 
 export default function BoardPage() {
-  const [selected, setSelected] = useState('ALL'); // key 기준!
+  const [selected, setSelected] = useState('ALL');
   const [open, setOpen] = useState(false);
 
   const setBoards = useSetAtom(boardListAtom);
   const allBoards = useAtomValue(boardListAtom);
 
   useEffect(() => {
+    // 토큰이 없으면 불러오지 않음 (fetchBoards에서 자동 체크됨)
     const loadBoards = async () => {
       try {
         const data = await fetchBoards();
@@ -27,7 +28,6 @@ export default function BoardPage() {
     loadBoards();
   }, [setBoards]);
 
-  // 필터링은 무조건 영문 key 기준
   const filteredPosts =
     selected === 'ALL'
       ? allBoards

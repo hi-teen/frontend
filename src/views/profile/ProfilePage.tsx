@@ -1,5 +1,6 @@
 'use client';
 
+import type { UserInfo } from '@/shared/api/auth';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
@@ -13,20 +14,6 @@ const SearchModal = dynamic(() => import('../../../app/_component/SearchModal'),
   ssr: false,
 }) as React.ComponentType<{ onClose: () => void }>;
 
-interface UserInfo {
-  email: string;
-  name: string;
-  nickname: string;
-  schoolId: number;
-  schoolName?: string;
-  gradeNumber: number;
-  classNumber: number;
-  school?: {
-    id: number;
-    schoolName: string;
-    [key: string]: any;
-  };
-}
 
 export default function ProfilePage() {
   const router = useRouter();
