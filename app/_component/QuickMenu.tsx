@@ -1,6 +1,7 @@
 'use client';
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 type PeriodType = {
   period: number;
@@ -28,7 +29,7 @@ const sampleTimetable = {
 
 function getCurrentPeriodInfo(list: PeriodType) {
   const now = new Date();
-  const todayStr = now.toLocaleDateString("en-CA"); // yyyy-mm-dd
+  const todayStr = now.toLocaleDateString("en-CA");
   for (let i = 0; i < list.length; i++) {
     const { start, end } = list[i];
     const startDate = new Date(`${todayStr}T${start}:00`);
@@ -46,7 +47,32 @@ function getCurrentPeriodInfo(list: PeriodType) {
   return { current: -1, isBreak: false };
 }
 
+// 학교 url 가져오기 함수 (http:// 자동 붙이기)
+function getSchoolUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  const profile = localStorage.getItem('signupProfile');
+  if (!profile) return null;
+  try {
+    const parsed = JSON.parse(profile);
+    let url = parsed?.school?.schoolUrl;
+    if (!url) return null;
+    // 프로토콜이 없으면 http://를 붙인다!
+    if (!/^https?:\/\//.test(url)) {
+      url = 'http://' + url;
+    }
+    return url;
+  } catch {
+    return null;
+  }
+}
+
 export default function QuickMenu() {
+  const [schoolUrl, setSchoolUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSchoolUrl(getSchoolUrl());
+  }, []);
+
   const days = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
   const todayIndex = new Date().getDay();
   const today = days[todayIndex];
@@ -79,7 +105,6 @@ export default function QuickMenu() {
       nextPeriodTime = periods[current + 1].start;
     }
   } else if (current === -1 && todaySubjects.length > 0) {
-    // 수업 전
     nowSubject = "수업 전";
     nextSubject = todaySubjects[0];
     nextPeriodLabel = `1교시`;
@@ -88,7 +113,13 @@ export default function QuickMenu() {
 
   return (
     <div className='flex gap-3 px-4 py-6 items-center overflow-x-auto hide-scrollbar'>
-      <button className='flex flex-col items-center gap-1 min-w-[4rem]'>
+      <button
+        className='flex flex-col items-center gap-1 min-w-[4rem]'
+        onClick={() => {
+          if (schoolUrl) window.open(schoolUrl, '_blank');
+        }}
+        disabled={!schoolUrl}
+      >
         <div className='w-[60px] h-[60px] bg-[#E9F0FF] rounded-[10px] flex items-center justify-center'>
           <Image src='/homeicon.png' alt='학교 홈' width={40} height={40} />
         </div>

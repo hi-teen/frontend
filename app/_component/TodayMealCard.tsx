@@ -3,9 +3,6 @@
 import { useRef, useState } from 'react';
 import Image from 'next/image';
 
-import { parse, format } from 'date-fns';
-import { ko } from 'date-fns/locale';
-
 interface Meal {
   date: string;
   lunch: string[];
@@ -22,14 +19,15 @@ interface Meal {
 
 interface TodayMealCardProps {
   monthMeals: Meal[];
+  initialIndex?: number;
 }
 
 function cleanMenuName(menu: string) {
   return menu.replace(/\s*\([^)]+\)/g, '').trim();
 }
 
-export default function TodayMealCard({ monthMeals }: TodayMealCardProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMealCardProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<{ title: string; calories: string; nutrients: string }>({
     title: '',
