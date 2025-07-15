@@ -56,9 +56,9 @@ export function getSchoolInfoFromProfile() {
         석식?: { menus?: string[]; calories?: string; nutrients?: string };
       };
   
-      // 메뉴 끝 마침표 . 제거 함수
-      const cleanMenus = (arr?: string[]) =>
-        arr ? arr.map(menu => menu.replace(/\./g, '').trim()) : [];
+      // 메뉴명 끝의 점만 제거 (괄호 안 점은 유지)
+const cleanMenus = (arr?: string[]) =>
+    arr ? arr.map(menu => menu.replace(/(\.)(?=\s*\(|$)/g, '').trim()) : [];
   
       return {
         date: formattedDate,

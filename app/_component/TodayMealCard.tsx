@@ -22,17 +22,32 @@ interface TodayMealCardProps {
   initialIndex?: number;
 }
 
+// 메뉴 이름에서 괄호 부분(알러지)을 제거
 function cleanMenuName(menu: string) {
-  return menu.replace(/\s*\([^)]+\)/g, '').trim();
+  return menu.replace(/\s*\([^)]+\)/g, '').replace(/\.$/, '').trim();
+}
+
+// 괄호 안 알러지 정보만 추출 (점 포함)
+function extractAllergy(menu: string) {
+  const match = menu.match(/\(([^)]+)\)/);
+  return match ? match[1] : '';
 }
 
 export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMealCardProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState<{ title: string; calories: string; nutrients: string }>({
+  const [modalContent, setModalContent] = useState<{
+    title: string;
+    calories: string;
+    nutrients: string;
+    menus: string[];
+    allergies: string[];
+  }>({
     title: '',
     calories: '',
     nutrients: '',
+    menus: [],
+    allergies: [],
   });
   const startX = useRef<number | null>(null);
 
@@ -51,8 +66,19 @@ export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMea
     startX.current = null;
   };
 
-  const openModal = (title: string, calories: string, nutrients: string) => {
-    setModalContent({ title, calories, nutrients });
+  const openModal = (
+    title: string,
+    calories: string,
+    nutrients: string,
+    menus: string[]
+  ) => {
+    setModalContent({
+      title,
+      calories,
+      nutrients,
+      menus,
+      allergies: menus.map(extractAllergy),
+    });
     setModalOpen(true);
   };
 
@@ -96,7 +122,8 @@ export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMea
                   openModal(
                     '중식 영양성분',
                     currentMeal.lunchInfo?.calories || '-',
-                    currentMeal.lunchInfo?.nutrients || '-'
+                    currentMeal.lunchInfo?.nutrients || '-',
+                    currentMeal.lunch
                   )
                 }
               >
@@ -118,7 +145,8 @@ export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMea
                   openModal(
                     '석식 영양성분',
                     currentMeal.dinnerInfo?.calories || '-',
-                    currentMeal.dinnerInfo?.nutrients || '-'
+                    currentMeal.dinnerInfo?.nutrients || '-',
+                    currentMeal.dinner
                   )
                 }
               >
@@ -191,11 +219,30 @@ export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMea
               <span className="text-sm font-semibold text-gray-700">칼로리</span>
               <p className="text-sm text-gray-800 mt-0.5">{modalContent.calories}</p>
             </div>
-            <div>
+            <div className="mb-2">
               <span className="text-sm font-semibold text-gray-700">영양성분</span>
               <p className="text-sm text-gray-800 mt-0.5 whitespace-pre-line">
                 {modalContent.nutrients}
               </p>
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-gray-700">메뉴 (알러지)</span>
+              <ul className="text-sm text-gray-800 mt-1 font-semibold">
+                {modalContent.menus.map((menu, i) => {
+                  const menuName = cleanMenuName(menu);
+                  const allergy = extractAllergy(menu);
+                  // 콘솔에서 알러지 정보 점포함 확인
+                  console.log(`menu raw: ${menu} | extractAllergy: ${allergy}`);
+                  return (
+                    <li key={i}>
+                      {menuName}
+                      {allergy && (
+                        <span className="text-xs text-gray-500"> ({allergy})</span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </div>
         </div>

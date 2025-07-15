@@ -51,19 +51,23 @@ export default function FavoriteBoardSection({
 
       {/* 게시글 목록: 개별 흰 박스, 콤팩트 모드 */}
       <div className="space-y-2">
-        {(posts[selected] ?? []).slice(0, 3).map((post) => (
-          <PostCard
-            key={post.id}
-            id={post.id}
-            title={post.title}
-            content={post.content}
-            likes={post.loveCount}
-            comments={post.scrapCount}
-            views={0}
-            compact
-          />
-        ))}
-      </div>
+  {(posts[selected] ?? [])
+    .slice()
+    .reverse()
+    .slice(0, 3)
+    .map((post) => (
+      <PostCard
+        key={post.id}
+        id={post.id}
+        title={post.title}
+        content={post.content}
+        likes={post.loveCount}
+        comments={post.scrapCount}
+        views={0}
+        compact
+      />
+    ))}
+</div>
     </div>
   );
 }
