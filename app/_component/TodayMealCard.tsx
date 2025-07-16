@@ -215,35 +215,46 @@ export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMea
               ×
             </button>
             <h2 className="text-lg font-bold mb-3 text-[#3565b9]">{modalContent.title}</h2>
-            <div className="mb-2">
+
+            {/* 칼로리 */}
+            <div className="mb-2 flex items-center gap-2">
+              <Image src="/calorie.png" alt="칼로리" width={18} height={18} />
               <span className="text-sm font-semibold text-gray-700">칼로리</span>
-              <p className="text-sm text-gray-800 mt-0.5">{modalContent.calories}</p>
             </div>
-            <div className="mb-2">
+            <p className="text-sm text-gray-800 font-semibold mb-2">{modalContent.calories}</p>
+            {/* 실선 */}
+            <div className="border-t border-gray-200 my-2" />
+
+            {/* 영양성분 */}
+            <div className="mb-2 flex items-center gap-2">
+              <Image src="/ingredients.png" alt="영양성분" width={18} height={18} />
               <span className="text-sm font-semibold text-gray-700">영양성분</span>
-              <p className="text-sm text-gray-800 mt-0.5 whitespace-pre-line">
-                {modalContent.nutrients}
-              </p>
             </div>
-            <div>
+            <p className="text-sm text-gray-800 font-semibold whitespace-pre-line mb-2">
+              {modalContent.nutrients}
+            </p>
+            {/* 실선 */}
+            <div className="border-t border-gray-200 my-2" />
+
+            {/* 메뉴(알러지) */}
+            <div className="flex items-center gap-2 mb-1">
+              <Image src="/menu.png" alt="메뉴" width={18} height={18} />
               <span className="text-sm font-semibold text-gray-700">메뉴 (알러지)</span>
-              <ul className="text-sm text-gray-800 mt-1 font-semibold">
-                {modalContent.menus.map((menu, i) => {
-                  const menuName = cleanMenuName(menu);
-                  const allergy = extractAllergy(menu);
-                  // 콘솔에서 알러지 정보 점포함 확인
-                  console.log(`menu raw: ${menu} | extractAllergy: ${allergy}`);
-                  return (
-                    <li key={i}>
-                      {menuName}
-                      {allergy && (
-                        <span className="text-xs text-gray-500"> ({allergy})</span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
             </div>
+            <ul className="text-sm text-gray-800 font-semibold mt-1">
+              {modalContent.menus.map((menu, i) => {
+                const menuName = cleanMenuName(menu);
+                const allergy = extractAllergy(menu);
+                return (
+                  <li key={i}>
+                    {menuName}
+                    {allergy && (
+                      <span className="text-xs text-gray-500"> ({allergy})</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
       )}

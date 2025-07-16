@@ -16,7 +16,7 @@ const SearchModal = dynamic(() => import('../../_component/SearchModal'), {
 }) as React.ComponentType<{ onClose: () => void }>;
 
 interface Props {
-  selected: string; // key ('ALL', 'FREE', ...)
+  selected: string;
   onOpen: () => void;
   onSelectBoard: (key: string) => void;
 }
@@ -39,12 +39,28 @@ export default function BoardHeader({
   const [openSearch, setOpenSearch] = useState(false);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
+  const [schoolName, setSchoolName] = useState<string>('');
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const profileStr = typeof window !== 'undefined' ? localStorage.getItem('signupProfile') : null;
+    if (profileStr) {
+      try {
+        const profile = JSON.parse(profileStr);
+        if (profile.school?.schoolName) {
+          setSchoolName(profile.school.schoolName);
+        } else if (profile.schoolName) {
+          setSchoolName(profile.schoolName);
+        }
+      } catch {
+        setSchoolName('');
+      }
+    }
+  }, []);
 
   const handleScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
-
     setShowLeftFade(el.scrollLeft > 0);
     setShowRightFade(el.scrollWidth > el.clientWidth + el.scrollLeft + 1);
   };
@@ -52,7 +68,6 @@ export default function BoardHeader({
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-
     handleScroll();
     el.addEventListener('scroll', handleScroll);
     return () => el.removeEventListener('scroll', handleScroll);
@@ -66,7 +81,7 @@ export default function BoardHeader({
             <Link href='/'>
               <Image src='/hiteen.svg' alt='HiTeen 로고' width={72} height={24} priority />
             </Link>
-            <span className='text-xl font-bold mt-1'>한국고등학교</span>
+            <span className='text-xl font-bold mt-1'>{schoolName || '학교명 없음'}</span>
           </div>
           <div className='flex items-center gap-4 mt-3'>
             <Link href="/write">
@@ -76,10 +91,10 @@ export default function BoardHeader({
               <MagnifyingGlassIcon className="w-6 h-6 text-gray-400" />
             </button>
             <button className="relative">
-              <BellIcon className="w-6 h-6 text-gray-400" />
+              {/* <BellIcon className="w-6 h-6 text-gray-400" />
               <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
                 6
-              </span>
+              </span> */}
             </button>
           </div>
         </div>

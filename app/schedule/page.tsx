@@ -171,7 +171,7 @@ export default function SchedulePage() {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   fontWeight: 700,
-                  fontSize: '11px',
+                  fontSize: '9px',
                   letterSpacing: '-0.5px',
                 }}
                 title={subject}

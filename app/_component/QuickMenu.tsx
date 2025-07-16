@@ -159,11 +159,10 @@ export default function QuickMenu() {
         }}
         disabled={!schoolUrl}
       >
-        <div className='w-[60px] h-[60px] bg-[#E9F0FF] rounded-[10px] flex items-center justify-center'>
-          <Image src='/homeicon.png' alt='학교 홈' width={40} height={40} />
+        <div className='w-[64px] h-[72px] bg-[#E9F0FF] rounded-[10px] flex items-center justify-center'>
+          <Image src='/homeicon.png' alt='학교 홈' width={44} height={44} />
         </div>
-        <span className='text-xs text-[#656565] font-semibold whitespace-nowrap'>학교 홈</span>
-      </button>
+         </button>
 
       <div className='flex-1 bg-[#E9F0FF] rounded-[10px] px-4 py-3 flex justify-between items-center h-[72px] min-w-[180px]'>
         {/* 지금 수업 (왼쪽) */}
