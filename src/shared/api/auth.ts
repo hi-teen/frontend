@@ -193,3 +193,34 @@ export const fetchMe = async (): Promise<UserInfo> => {
     },
   };
 };
+
+export async function fetchWithAuth(
+  input: RequestInfo,
+  init?: RequestInit
+): Promise<Response> {
+  let token = localStorage.getItem('accessToken');
+  if (!token) throw new Error('토큰 없음');
+
+  let res = await fetch(input, {
+    ...init,
+    headers: {
+      ...(init?.headers || {}),
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  // 만료(401/403)시 refresh → access 재시도
+  if (res.status === 401 || res.status === 403) {
+    const { accessToken } = await reissueToken();
+    token = accessToken;
+    res = await fetch(input, {
+      ...init,
+      headers: {
+        ...(init?.headers || {}),
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  return res;
+}
