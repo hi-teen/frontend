@@ -167,7 +167,7 @@ export default function QuickMenu() {
       <div className='flex-1 bg-[#E9F0FF] rounded-[10px] px-4 py-3 flex justify-between items-center h-[72px] min-w-[180px]'>
         {/* 지금 수업 (왼쪽) */}
         <div className="flex flex-col justify-center">
-          <span className='text-xs text-[#656565] font-semibold mb-1'>지금 수업</span>
+          <span className='text-xs text-[#656565] font-semibold'>지금 수업</span>
           <span className='text-lg font-bold text-[#2269FF]'>{nowSubject}</span>
           <span className='text-xs text-gray-500'>{periodLabel}</span>
         </div>

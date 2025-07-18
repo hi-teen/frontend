@@ -15,7 +15,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   selected: string;
-  onSelect: (board: string) => void;
+  onSelect: (label: string) => void;
 }
 
 const boardOptions: BoardOption[] = [
@@ -65,30 +65,34 @@ export default function BoardSelectModal({
               <ul className="space-y-2">
                 {boardOptions.map((board) => (
                   <li
-                    key={board.key}
-                    className={`p-3 rounded-lg cursor-pointer flex items-center gap-2 ${
-                      selected === board.key ? 'bg-blue-100' : 'hover:bg-gray-100'
+                  key={board.key}
+                  className={`p-3 rounded-lg cursor-pointer flex items-center gap-2 ${
+                    selected === board.label ? 'bg-blue-100' : 'hover:bg-gray-100'
+                  }`}
+                  onClick={() => {
+                    onSelect(board.label);
+                    onClose();
+                  }}
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(board.key);
+                    }}
+                    className={`text-lg mr-1 ${
+                      favoriteBoards.includes(board.key)
+                        ? 'text-yellow-400'
+                        : 'text-gray-300'
                     }`}
-                    onClick={() => onSelect(board.key)}
+                    aria-label="즐겨찾기"
+                    tabIndex={-1}
+                    type="button"
                   >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(board.key);
-                      }}
-                      className={`text-lg mr-1 ${
-                        favoriteBoards.includes(board.key)
-                          ? 'text-yellow-400'
-                          : 'text-gray-300'
-                      }`}
-                      aria-label="즐겨찾기"
-                      tabIndex={-1}
-                      type="button"
-                    >
-                      ★
-                    </button>
-                    <span className="flex-1 text-base">{board.label}</span>
-                  </li>
+                    ★
+                  </button>
+                  <span className="flex-1 text-base">{board.label}</span>
+                </li>
+                
                 ))}
               </ul>
             </Dialog.Panel>

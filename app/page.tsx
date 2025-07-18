@@ -8,19 +8,19 @@ import { favoriteBoardsAtom } from '@/entities/auth/model/favoriteBoardsAtom';
 import { fetchBoards, BoardItem } from '@/shared/api/board';
 
 import HomeHeader from './_component/HomeHeader';
-import TodayMealContainer from './_component/TodayMealContainer'; // 컨테이너형 컴포넌트 사용
+import TodayMealContainer from './_component/TodayMealContainer';
 import QuickMenu from './_component/QuickMenu';
 import FavoriteBoardSection from './_component/FavoriteBoardSection';
 import HotPostSection from './_component/HotPostSection';
 
 const allBoards = [
-  { key: 'FREE', label: '자유게시판', icon: '/smile.png' },
-  { key: 'SECRET', label: '비밀게시판', icon: '/secret.png' },
-  { key: 'PROMOTION', label: '홍보게시판', icon: '/promotion.png' },
-  { key: 'INFORMATION', label: '정보게시판', icon: '/light.png' },
-  { key: 'GRADE1', label: '1학년게시판', icon: '/first.png' },
-  { key: 'GRADE2', label: '2학년게시판', icon: '/second.png' },
-  { key: 'GRADE3', label: '3학년게시판', icon: '/third.png' },
+  { key: 'FREE', label: '자유게시판', emoji: '😊' },
+  { key: 'SECRET', label: '비밀게시판', emoji: '🤫' },
+  { key: 'PROMOTION', label: '홍보게시판', emoji: '📢' },
+  { key: 'INFORMATION', label: '정보게시판', emoji: '💡' },
+  { key: 'GRADE1', label: '1학년게시판', emoji: '1️⃣' },
+  { key: 'GRADE2', label: '2학년게시판', emoji: '2️⃣' },
+  { key: 'GRADE3', label: '3학년게시판', emoji: '3️⃣' },
 ];
 
 export default function HomePage() {
@@ -55,6 +55,7 @@ export default function HomePage() {
       <HomeHeader />
       <TodayMealContainer />
       <QuickMenu />
+      {/* FavoriteBoardSection에 emoji 전달 */}
       <FavoriteBoardSection
         boards={favoriteBoardMeta}
         posts={boardPosts}

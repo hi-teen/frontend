@@ -1,13 +1,12 @@
 'use client';
 
-import Image from "next/image";
 import PostCard from './PostCard';
 import { BoardItem } from '@/shared/api/board';
 
 interface Board {
   key: string;
   label: string;
-  icon: string;
+  emoji: string;
 }
 
 interface Props {
@@ -37,13 +36,13 @@ export default function FavoriteBoardSection({
               <button
                 key={board.key}
                 onClick={() => setSelected(board.key)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition whitespace-nowrap
+                className={`flex items-center gap-1 px-2.5 py-0.5 rounded-lg border text-xs font-semibold transition whitespace-nowrap
                   ${isActive
                     ? 'border-[#417EFF] text-[#417EFF]'
-                    : 'border-[#A2A2A2] text-[#A2A2A2]'
+                    : 'border-[#EAEAEA] text-[#A2A2A2]'
                   } bg-white`}
               >
-                <Image src={board.icon} alt={board.label} width={16} height={16} />
+                <span className="text-lg">{board.emoji}</span>
                 {board.label}
               </button>
             );
