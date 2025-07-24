@@ -26,17 +26,17 @@ export default function SignupCompletePage() {
         // 2. 로그인 → accessToken, refreshToken 저장
         await loginApi(form.email, form.password);
 
-        // 3. 유저 정보 받아오기 (토큰 만료 시 자동 재발급)
-        const userInfo = await fetchMe();
-        setUser(userInfo);
-        setNickname(userInfo.nickname);
-      } catch (err) {
-        console.error(err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : '회원가입에 실패했습니다. 다시 시도해주세요.'
-        );
+      //   // 3. 유저 정보 받아오기 (토큰 만료 시 자동 재발급)
+      //   const userInfo = await fetchMe();
+      //   setUser(userInfo);
+      //   setNickname(userInfo.nickname);
+      // } catch (err) {
+      //   console.error(err);
+      //   setError(
+      //     err instanceof Error
+      //       ? err.message
+      //       : '회원가입에 실패했습니다. 다시 시도해주세요.'
+      //   );
       } finally {
         setIsSubmitting(false);
       }

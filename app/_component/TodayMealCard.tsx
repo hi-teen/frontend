@@ -3,9 +3,6 @@
 import { useRef, useState } from 'react';
 import Image from 'next/image';
 
-import { parse, format } from 'date-fns';
-import { ko } from 'date-fns/locale';
-
 interface Meal {
   date: string;
   lunch: string[];
@@ -22,19 +19,35 @@ interface Meal {
 
 interface TodayMealCardProps {
   monthMeals: Meal[];
+  initialIndex?: number;
 }
 
+// 메뉴 이름에서 괄호 부분(알러지)을 제거
 function cleanMenuName(menu: string) {
-  return menu.replace(/\s*\([^)]+\)/g, '').trim();
+  return menu.replace(/\s*\([^)]+\)/g, '').replace(/\.$/, '').trim();
 }
 
-export default function TodayMealCard({ monthMeals }: TodayMealCardProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+// 괄호 안 알러지 정보만 추출 (점 포함)
+function extractAllergy(menu: string) {
+  const match = menu.match(/\(([^)]+)\)/);
+  return match ? match[1] : '';
+}
+
+export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMealCardProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState<{ title: string; calories: string; nutrients: string }>({
+  const [modalContent, setModalContent] = useState<{
+    title: string;
+    calories: string;
+    nutrients: string;
+    menus: string[];
+    allergies: string[];
+  }>({
     title: '',
     calories: '',
     nutrients: '',
+    menus: [],
+    allergies: [],
   });
   const startX = useRef<number | null>(null);
 
@@ -53,8 +66,19 @@ export default function TodayMealCard({ monthMeals }: TodayMealCardProps) {
     startX.current = null;
   };
 
-  const openModal = (title: string, calories: string, nutrients: string) => {
-    setModalContent({ title, calories, nutrients });
+  const openModal = (
+    title: string,
+    calories: string,
+    nutrients: string,
+    menus: string[]
+  ) => {
+    setModalContent({
+      title,
+      calories,
+      nutrients,
+      menus,
+      allergies: menus.map(extractAllergy),
+    });
     setModalOpen(true);
   };
 
@@ -98,7 +122,8 @@ export default function TodayMealCard({ monthMeals }: TodayMealCardProps) {
                   openModal(
                     '중식 영양성분',
                     currentMeal.lunchInfo?.calories || '-',
-                    currentMeal.lunchInfo?.nutrients || '-'
+                    currentMeal.lunchInfo?.nutrients || '-',
+                    currentMeal.lunch
                   )
                 }
               >
@@ -120,7 +145,8 @@ export default function TodayMealCard({ monthMeals }: TodayMealCardProps) {
                   openModal(
                     '석식 영양성분',
                     currentMeal.dinnerInfo?.calories || '-',
-                    currentMeal.dinnerInfo?.nutrients || '-'
+                    currentMeal.dinnerInfo?.nutrients || '-',
+                    currentMeal.dinner
                   )
                 }
               >
@@ -189,16 +215,46 @@ export default function TodayMealCard({ monthMeals }: TodayMealCardProps) {
               ×
             </button>
             <h2 className="text-lg font-bold mb-3 text-[#3565b9]">{modalContent.title}</h2>
-            <div className="mb-2">
+
+            {/* 칼로리 */}
+            <div className="mb-2 flex items-center gap-2">
+              <Image src="/calorie.png" alt="칼로리" width={18} height={18} />
               <span className="text-sm font-semibold text-gray-700">칼로리</span>
-              <p className="text-sm text-gray-800 mt-0.5">{modalContent.calories}</p>
             </div>
-            <div>
+            <p className="text-sm text-gray-800 font-semibold mb-2">{modalContent.calories}</p>
+            {/* 실선 */}
+            <div className="border-t border-gray-200 my-2" />
+
+            {/* 영양성분 */}
+            <div className="mb-2 flex items-center gap-2">
+              <Image src="/ingredients.png" alt="영양성분" width={18} height={18} />
               <span className="text-sm font-semibold text-gray-700">영양성분</span>
-              <p className="text-sm text-gray-800 mt-0.5 whitespace-pre-line">
-                {modalContent.nutrients}
-              </p>
             </div>
+            <p className="text-sm text-gray-800 font-semibold whitespace-pre-line mb-2">
+              {modalContent.nutrients}
+            </p>
+            {/* 실선 */}
+            <div className="border-t border-gray-200 my-2" />
+
+            {/* 메뉴(알러지) */}
+            <div className="flex items-center gap-2 mb-1">
+              <Image src="/menu.png" alt="메뉴" width={18} height={18} />
+              <span className="text-sm font-semibold text-gray-700">메뉴 (알러지)</span>
+            </div>
+            <ul className="text-sm text-gray-800 font-semibold mt-1">
+              {modalContent.menus.map((menu, i) => {
+                const menuName = cleanMenuName(menu);
+                const allergy = extractAllergy(menu);
+                return (
+                  <li key={i}>
+                    {menuName}
+                    {allergy && (
+                      <span className="text-xs text-gray-500"> ({allergy})</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
       )}

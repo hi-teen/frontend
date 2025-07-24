@@ -11,7 +11,7 @@ interface Props {
 export default function PostList({ posts, selectedBoard }: Props) {
   return (
     <div className="px-4 space-y-3">
-      {posts.map((post) => (
+      {[...posts].reverse().map((post) => (
         <PostCard
           key={post.id}
           id={post.id}

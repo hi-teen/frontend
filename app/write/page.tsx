@@ -16,8 +16,9 @@ const boards = [
 
 export default function PostWritePage() {
   const router = useRouter();
+  // selectedBoard를 객체로 관리!
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedBoard, setSelectedBoard] = useState('게시판 선택');
+  const [selectedBoard, setSelectedBoard] = useState<null | { key: string; label: string }>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(true);
@@ -28,13 +29,10 @@ export default function PostWritePage() {
       alert('로그인이 필요합니다.');
       return;
     }
-    if (!title || !content || selectedBoard === '게시판 선택') {
+    if (!title || !content || !selectedBoard) {
       alert('모든 항목을 입력해주세요.');
       return;
     }
-
-    const boardObj = boards.find((b) => b.label === selectedBoard || b.key === selectedBoard);
-    const category = boardObj?.key ?? selectedBoard;
 
     try {
       const res = await fetch('https://hiteen.site/api/v1/boards', {
@@ -46,7 +44,7 @@ export default function PostWritePage() {
         body: JSON.stringify({
           title,
           content,
-          category,
+          category: selectedBoard.key,
           disclosureStatus: isAnonymous ? 'ANONYMOUS' : 'PUBLIC',
         }),
       });
@@ -66,8 +64,15 @@ export default function PostWritePage() {
     }
   };
 
+  // 한국어로만 표시, 선택되면 label만 보임
+  const handleSelectBoard = (label: string) => {
+    const boardObj = boards.find((b) => b.label === label);
+    setSelectedBoard(boardObj ?? null);
+    setIsModalOpen(false); // 모달도 바로 닫히게!
+  };
+
   return (
-    <div className="flex flex-col min-h-screen max-w-lg mx-auto bg-white pb-[112px]">
+    <div className="flex flex-col min-h-screen max-w-lg mx-auto bg-white">
       {/* 상단 고정영역 */}
       <div className="shrink-0 flex items-center justify-between px-4 py-4 border-b">
         <button onClick={() => router.back()}>
@@ -76,14 +81,16 @@ export default function PostWritePage() {
         <h1 className="text-base font-semibold">글쓰기</h1>
         <div className="w-5 h-5" />
       </div>
+
       <div className="shrink-0 px-4 pt-4">
         <button
           onClick={() => setIsModalOpen(true)}
           className="w-full text-left text-sm font-medium px-4 py-3 border rounded-lg text-gray-600"
         >
-          {selectedBoard}
+          {selectedBoard?.label ?? '게시판 선택'}
         </button>
       </div>
+
       <div className="shrink-0 px-4 mt-4">
         <input
           type="text"
@@ -93,8 +100,9 @@ export default function PostWritePage() {
           onChange={(e) => setTitle(e.target.value)}
         />
       </div>
-      {/* 내용 입력/워터마크: flex-1 min-h-0 */}
-      <div className="flex-1 min-h-0 flex flex-col px-4 mt-4">
+
+      {/* flex-1 min-h-0 = 남는 공간 채움, 아래 버튼 침범X */}
+      <div className="flex-1 min-h-0 flex flex-col px-4 mt-4 pb-24">
         <div className="relative flex-1 min-h-0 flex flex-col">
           {/* 워터마크: 내용이 없을 때만 */}
           {(!content || content.length === 0) && (
@@ -105,7 +113,7 @@ export default function PostWritePage() {
                 top-0 left-0 right-0 bottom-0
                 flex items-end
                 text-xs text-gray-300 z-10 select-none leading-relaxed
-                pl-4 pb-4
+                pl-4 pb-6
               "
               style={{ userSelect: "none" }}
             >
@@ -119,20 +127,15 @@ export default function PostWritePage() {
           <textarea
             placeholder="내용을 입력하세요"
             className="
-              w-full h-full text-sm p-4 border rounded-md outline-none
-              bg-transparent relative z-20 placeholder-gray-400 resize-none
+              w-full flex-1 min-h-0 text-base p-6 border rounded-lg outline-none
+              bg-transparent relative z-20 placeholder-gray-400 resize-none transition-shadow focus:shadow-lg
             "
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            style={{
-              height: "100%",
-              minHeight: 450,
-              maxHeight: "100%",
-              boxSizing: "border-box",
-            }}
           />
         </div>
       </div>
+
       {/* 하단 고정: 익명 작성 + 등록버튼 */}
       <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto flex items-center px-4 pb-6 pt-3 bg-white z-50 gap-3">
         <label className="flex items-center gap-2 mr-auto select-none">
@@ -151,12 +154,13 @@ export default function PostWritePage() {
           등록
         </button>
       </div>
+
       {/* 게시판 선택 모달 */}
       <BoardSelectModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        selected={selectedBoard}
-        onSelect={setSelectedBoard}
+        selected={selectedBoard?.label ?? '게시판 선택'}
+        onSelect={handleSelectBoard}
       />
     </div>
   );

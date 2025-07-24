@@ -32,8 +32,8 @@ export default function LoginPage() {
       // localStorage에는 loginApi가 이미 저장함
 
       // 사용자 정보 불러오기
-      const me = await fetchMe();
-      setUser(me);
+      // const me = await fetchMe();
+      // setUser(me);
 
       // 홈으로 이동
       router.push('/');
