@@ -43,19 +43,45 @@ export default function BoardHeader({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const profileStr = typeof window !== 'undefined' ? localStorage.getItem('signupProfile') : null;
-    if (profileStr) {
+    async function fetchAndSetSchool() {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      if (!token) {
+        setSchoolName('학교명 없음');
+        return;
+      }
       try {
-        const profile = JSON.parse(profileStr);
-        if (profile.school?.schoolName) {
-          setSchoolName(profile.school.schoolName);
-        } else if (profile.schoolName) {
-          setSchoolName(profile.schoolName);
+        const res = await fetch('https://hiteen.site/api/v1/members/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        // 성공 응답 형태 { success, header, data: { email, name, ... , school: {schoolName} } }
+        if (json?.data?.school?.schoolName) {
+          setSchoolName(json.data.school.schoolName);
+          // 최신 정보 localStorage에도 저장
+          localStorage.setItem('signupProfile', JSON.stringify(json.data));
+        } else {
+          setSchoolName('');
         }
       } catch {
-        setSchoolName('');
+        // 서버 요청 실패시 localStorage fallback
+        const profileStr = typeof window !== 'undefined' ? localStorage.getItem('signupProfile') : null;
+        if (profileStr) {
+          try {
+            const profile = JSON.parse(profileStr);
+            if (profile.school?.schoolName) {
+              setSchoolName(profile.school.schoolName);
+            } else if (profile.schoolName) {
+              setSchoolName(profile.schoolName);
+            }
+          } catch {
+            setSchoolName('');
+          }
+        } else {
+          setSchoolName('');
+        }
       }
     }
+    fetchAndSetSchool();
   }, []);
 
   const handleScroll = () => {

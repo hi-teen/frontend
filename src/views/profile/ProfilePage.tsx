@@ -171,6 +171,14 @@ export default function ProfilePage() {
           <p className="font-semibold text-sm">좋아요한 글</p>
           <ChevronRightIcon className="w-5 h-5 text-gray-400" />
         </div>
+        <div
+          onClick={() => router.push('/profile/liked-comments')}
+          className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
+        >
+          <p className="font-semibold text-sm">좋아요한 댓글</p>
+          <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+        </div>
+
 
         {/* 고객 지원 */}
         <div className="bg-white p-4 rounded-2xl text-sm shadow-sm">
