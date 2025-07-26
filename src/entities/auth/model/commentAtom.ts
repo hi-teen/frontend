@@ -4,20 +4,21 @@ export interface ReplyItemType {
   replyId: number;
   content: string;
   anonymousNumber: number;
-  createdDate: string;
+  createdAt: string;
+  likeCount: number;
+  likedByMe: boolean;
+  idBoardWriter: boolean;
 }
 
 export interface CommentItemType {
   commentId: number;
   content: string;
   anonymousNumber: number;
-  createdDate: string;
-  replies: {
-    replyId: number;
-    content: string;
-    createdDate?: string;
-    anonymousNumber?: number;
-  }[];
+  createdAt: string;
+  likeCount: number;
+  likedByMe: boolean;
+  idBoardWriter: boolean;
+  replies: ReplyItemType[];
 }
 
 export const commentListAtom = atom<CommentItemType[]>([]);

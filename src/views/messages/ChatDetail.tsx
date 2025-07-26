@@ -2,73 +2,88 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { fetchMessages, sendMessageToRoom, pollMessages } from '@/shared/api/message';
 
-// 내 ID는 1, 상대방은 2로 목업
-const MY_ID = 1;
-const OTHER_ID = 2;
-
-// 사용할 이모지 목록
-const emojis = ['🐶', '🐱', '🐰', '🐻', '🐼', '🦊', '🐯', '🦁', '🐵', '🦄', '🐸', '🐷', '🐥', '🦖', '🦉', '🦦'];
-
-// 같은 방이면 같은 이모지로(방 번호가 다르면 바뀜)
+const emojis = ['🐶','🐱','🐰','🐻','🐼','🦊','🐯','🦁','🐵','🦄','🐸','🐷','🐥','🦖','🦉','🦦'];
 const getEmojiForRoom = (roomId: number) => emojis[roomId % emojis.length];
 
 export default function ChatDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const id = Number(params.id);
+  const roomId = Number(params.id);
 
-  // detail 채팅방 이모지 결정
-  const profileEmoji = getEmojiForRoom(id);
-
-  const initialMessages = [
-    {
-      id: 1,
-      senderId: OTHER_ID,
-      nickname: '익명',
-      content: '안녕하세요 😊',
-      time: '13:11',
-    },
-    {
-      id: 2,
-      senderId: MY_ID,
-      nickname: '',
-      content: '안녕하세요 😊',
-      time: '13:15',
-    },
-    {
-      id: 3,
-      senderId: OTHER_ID,
-      nickname: '익명',
-      content: '혹시 오늘 빨간 모자 쓴 분이신가요?',
-      time: '13:19',
-    },
-  ];
-
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const handleSend = () => {
-    if (message.trim()) {
-      const now = new Date();
-      const time =
-        now.getHours().toString().padStart(2, '0') +
-        ':' +
-        now.getMinutes().toString().padStart(2, '0');
-      setMessages((prev) => [
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 임시: 내 id 가져오기 (토큰에서 파싱하거나 context에서)
+  const myId = 1; // TODO: 실제 사용자 id로 교체 필요
+
+  useEffect(() => {
+    // 채팅방 메시지 불러오기
+    fetchMessages(roomId)
+      .then(setMessages)
+      .catch(() => setMessages([]))
+      .finally(() => setLoading(false));
+  }, [roomId]);
+
+  // 롱폴링 새 메시지 수신
+  useEffect(() => {
+    if (!messages.length) return;
+    let stopped = false;
+
+    async function longPoll() {
+      while (!stopped) {
+        try {
+          const lastId = messages[messages.length - 1]?.messageId || 0;
+          const newMsgs = await pollMessages(roomId, lastId);
+          if (Array.isArray(newMsgs) && newMsgs.length > 0) {
+            setMessages(prev => [...prev, ...newMsgs]);
+          }
+        } catch (e) {
+          // 에러 무시 후 재시도
+        }
+        await new Promise(res => setTimeout(res, 1000));
+      }
+    }
+
+    longPoll();
+    return () => { stopped = true; };
+  }, [roomId, messages]);
+
+  const handleSend = async () => {
+    if (!message.trim()) return;
+    try {
+      // TODO: 내 id 불러오기
+      await sendMessageToRoom(roomId, myId, message);
+      setMessages(prev => [
         ...prev,
         {
-          id: prev.length + 1,
-          senderId: MY_ID,
-          nickname: '',
+          messageId: Date.now(), // 임시
+          senderId: myId,
           content: message,
-          time,
-        },
+          createdAt: new Date().toISOString(),
+          chatNickname: '나',
+        }
       ]);
       setMessage('');
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 10);
+    } catch (err) {
+      alert('메시지 전송 실패');
     }
   };
+
+  // 메시지 스크롤 항상 아래로
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const profileEmoji = getEmojiForRoom(roomId);
 
   return (
     <div className="max-w-lg mx-auto h-screen flex flex-col bg-[#f8f8f8]">
@@ -79,46 +94,34 @@ export default function ChatDetailPage() {
         </button>
       </div>
 
-      {/* 날짜 */}
-      <div className="flex justify-center mb-2">
-        <span className="text-xs text-white bg-gray-400 px-3 py-1 rounded-full">25.05.05</span>
-      </div>
-
-      {/* 게시글 정보 */}
-      <div className="mx-4 bg-white rounded-2xl border border-gray-200 p-4 text-sm mb-4">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">비밀게시판</span>
-        </div>
-        <p className="font-semibold">오늘 축제</p>
-        <div className="mt-3 py-2 px-4 bg-gray-50 text-center text-sm text-gray-500 rounded-xl">
-          게시물 바로가기
-        </div>
-      </div>
-
       {/* 메시지 목록 */}
       <div className="flex-1 overflow-y-auto px-4 space-y-4 text-sm">
-        {messages.map((msg) =>
-          msg.senderId === OTHER_ID ? (
-            <div key={msg.id} className="flex gap-2 items-end">
-              {/* 이모지 프로필 */}
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mt-1 text-lg">
-                <span>{profileEmoji}</span>
+        {loading ? (
+          <div className="text-center text-gray-400 pt-20">로딩중...</div>
+        ) : (
+          messages.map((msg, idx) =>
+            msg.senderId !== myId ? (
+              <div key={msg.messageId || idx} className="flex gap-2 items-end">
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mt-1 text-lg">
+                  <span>{profileEmoji}</span>
+                </div>
+                <div>
+                  <p className="font-semibold mb-1">{msg.chatNickname ?? '익명'}</p>
+                  <div className="bg-white rounded-xl px-4 py-2 inline-block">{msg.content}</div>
+                  <div className="text-[10px] text-gray-400 mt-1">{msg.createdAt?.slice(11,16) ?? ''}</div>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold mb-1">{msg.nickname}</p>
-                <div className="bg-white rounded-xl px-4 py-2 inline-block">{msg.content}</div>
-                <div className="text-[10px] text-gray-400 mt-1">{msg.time}</div>
+            ) : (
+              <div key={msg.messageId || idx} className="flex justify-end gap-2 items-end">
+                <div className="text-right">
+                  <div className="bg-white rounded-xl px-4 py-2 inline-block">{msg.content}</div>
+                  <div className="text-[10px] text-gray-400 mt-1">{msg.createdAt?.slice(11,16) ?? ''}</div>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div key={msg.id} className="flex justify-end gap-2 items-end">
-              <div className="text-right">
-                <div className="bg-white rounded-xl px-4 py-2 inline-block">{msg.content}</div>
-                <div className="text-[10px] text-gray-400 mt-1">{msg.time}</div>
-              </div>
-            </div>
+            )
           )
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* 입력창 */}

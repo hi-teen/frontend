@@ -9,7 +9,7 @@ import {
   replyCommentAtom,
   CommentItemType,
 } from '@/entities/auth/model/commentAtom';
-import { fetchComments, postComment, postReply } from '@/shared/api/comment';
+import { fetchComments, postComment, postReply, toggleCommentLike } from '@/shared/api/comment';
 import {
   HeartIcon,
   PaperAirplaneIcon,
@@ -24,6 +24,16 @@ interface CommentSectionProps {
   onCommentCountChange: (count: number) => void;
 }
 
+// 날짜 포맷 함수: 2025-07-20 09:38:34 → 25/07/20 09:38
+function formatDateTime(datetime?: string) {
+  if (!datetime) return '';
+  const [date, time] = datetime.split(/[ T]/);
+  if (!date || !time) return datetime;
+  const [year, month, day] = date.split('-');
+  const [hh, mm] = time.split(':');
+  return `${year.slice(2)}/${month}/${day} ${hh}:${mm}`;
+}
+
 export default function CommentSection({ boardId, onCommentCountChange }: CommentSectionProps) {
   const [comments, setComments] = useAtom(commentListAtom);
   const [comment, setComment] = useAtom(newCommentAtom);
@@ -31,16 +41,21 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
   const [replyContent, setReplyContent] = useAtom(replyCommentAtom);
   const router = useRouter();
 
+  // 댓글, 대댓글 목록 불러오기
   useEffect(() => {
     fetchComments(boardId)
       .then((data) => {
         const parsedData: CommentItemType[] = data.map((comment: any) => ({
           ...comment,
           anonymousNumber: comment.anonymousNumber ?? 0,
+          likedByMe: comment.likedByMe ?? false,
+          likeCount: comment.likeCount ?? 0,
           replies: (comment.replies ?? []).map((reply: any) => ({
             ...reply,
             anonymousNumber: reply.anonymousNumber ?? 0,
-            createdDate: reply.createdDate ?? '',
+            createdAt: reply.createdAt ?? '',
+            likedByMe: reply.likedByMe ?? false,
+            likeCount: reply.likeCount ?? 0,
           })),
         }));
         setComments(parsedData);
@@ -52,6 +67,42 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
       .catch(console.error);
   }, [boardId, setComments, onCommentCountChange]);
 
+  // 댓글 좋아요
+  const handleToggleCommentLike = async (commentId: number) => {
+    try {
+      const data = await toggleCommentLike(commentId); // { liked, likeCount }
+      setComments((prev) =>
+        prev.map((c) =>
+          c.commentId === commentId
+            ? { ...c, likedByMe: data.liked, likeCount: data.likeCount }
+            : c
+        )
+      );
+    } catch (e) {
+      alert('댓글 좋아요 실패');
+    }
+  };
+
+  // 대댓글 좋아요
+  const handleToggleReplyLike = async (replyId: number) => {
+    try {
+      const data = await toggleCommentLike(replyId);
+      setComments((prev) =>
+        prev.map((c) => ({
+          ...c,
+          replies: c.replies?.map((r) =>
+            r.replyId === replyId
+              ? { ...r, likedByMe: data.liked, likeCount: data.likeCount }
+              : r
+          ) ?? [],
+        }))
+      );
+    } catch (e) {
+      alert('대댓글 좋아요 실패');
+    }
+  };
+
+  // 댓글 작성
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) return;
@@ -62,6 +113,8 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
         {
           ...newComment,
           anonymousNumber: newComment.anonymousNumber ?? 0,
+          likedByMe: newComment.likedByMe ?? false,
+          likeCount: newComment.likeCount ?? 0,
           replies: [],
         },
       ];
@@ -76,6 +129,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
     }
   };
 
+  // 대댓글 작성
   const handleReplySubmit = async (
     e: React.FormEvent,
     parentId: number
@@ -88,10 +142,14 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
       const parsedData: CommentItemType[] = data.map((comment: any) => ({
         ...comment,
         anonymousNumber: comment.anonymousNumber ?? 0,
+        likedByMe: comment.likedByMe ?? false,
+        likeCount: comment.likeCount ?? 0,
         replies: (comment.replies ?? []).map((reply: any) => ({
           ...reply,
           anonymousNumber: reply.anonymousNumber ?? 0,
-          createdDate: reply.createdDate ?? '',
+          createdAt: reply.createdAt ?? '',
+          likedByMe: reply.likedByMe ?? false,
+          likeCount: reply.likeCount ?? 0,
         })),
       }));
       setComments(parsedData);
@@ -115,7 +173,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
       const room = await sendAnonymousMessage({
         boardId,
         commentId,
-        content: ' ', 
+        content: ' ',
       });
       if (!room || !room.roomId) throw new Error('roomId 없음');
       router.push(`/messages/${room.roomId}`);
@@ -130,16 +188,17 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
       <div className="space-y-6">
         {comments.map((c) => (
           <div key={c.commentId} className="px-4 border-t border-gray-200 pt-4 relative">
-            <div className="absolute top-2 right-4 flex gap-3 text-gray-400">
-              <button>
-                <HeartIcon className="w-4 h-4" />
+            <div className="absolute top-2 right-4 flex items-center gap-2 text-gray-400">
+              <button onClick={() => handleToggleCommentLike(c.commentId)}>
+                <HeartIcon className={`w-3.5 h-3.5 ${c.likedByMe ? 'text-red-500' : 'text-gray-400'}`} />
               </button>
+              <span className="text-xs">{c.likeCount ?? 0}</span>
               <button onClick={() => setReplyTo(c.commentId)}>
-                <ArrowUturnRightIcon className="w-4 h-4" />
+                <ArrowUturnRightIcon className="w-3.5 h-3.5" />
               </button>
               {c.anonymousNumber != null && (
                 <button onClick={() => handleSendMessage(c.commentId, c.anonymousNumber)}>
-                  <PaperAirplaneIcon className="w-4 h-4" />
+                  <PaperAirplaneIcon className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
@@ -150,7 +209,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">익명{c.anonymousNumber ?? 0}</span>
-                  <span className="text-xs text-gray-400">{c.createdDate ?? ''}</span>
+                  <span className="text-xs text-gray-400">{formatDateTime(c.createdAt)}</span>
                 </div>
                 <p className="mt-1 text-sm text-black">{c.content ?? ''}</p>
 
@@ -176,12 +235,13 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
                         key={reply.replyId}
                         className="p-2 bg-gray-50 rounded-xl border border-gray-100 relative"
                       >
-                        <div className="absolute top-2 right-2 flex gap-2 text-gray-400">
-                          <button>
-                            <HeartIcon className="w-4 h-4" />
+                        <div className="absolute top-2 right-2 flex gap-2 text-gray-400 items-center">
+                          <button onClick={() => handleToggleReplyLike(reply.replyId)}>
+                            <HeartIcon className={`w-3.5 h-3.5 mt-1 ${reply.likedByMe ? 'text-red-500' : 'text-gray-400'}`} />
                           </button>
+                          <span className="text-xs ml-1">{reply.likeCount ?? 0}</span>
                           <button>
-                            <ArrowUturnRightIcon className="w-4 h-4" />
+                            <ArrowUturnRightIcon className="w-3.5 h-3.5 mt-1" />
                           </button>
                           {reply.anonymousNumber != null && (
                             <button
@@ -189,7 +249,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
                                 handleSendMessage(c.commentId, reply.anonymousNumber!)
                               }
                             >
-                              <PaperAirplaneIcon className="w-4 h-4" />
+                              <PaperAirplaneIcon className="w-3.5 h-3.5 mt-1" />
                             </button>
                           )}
                         </div>
@@ -197,7 +257,7 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
                           <span className="font-semibold text-sm text-blue-600">
                             익명{reply.anonymousNumber ?? 0}
                           </span>
-                          <span className="text-xs text-gray-400">{reply.createdDate ?? ''}</span>
+                          <span className="text-xs text-gray-400">{formatDateTime(reply.createdAt)}</span>
                         </div>
                         <p className="text-sm text-gray-800 mt-1">{reply.content ?? ''}</p>
                       </div>

@@ -50,3 +50,17 @@ export const fetchComments = async (boardId: number) => {
     return json.data.replies.at(-1); // 마지막 대댓글 반환
   };
   
+  export async function toggleCommentLike(commentId: number) {
+    const token = localStorage.getItem('accessToken');
+    if (!token) throw new Error('토큰 없음');
+    const res = await fetch(`https://hiteen.site/api/v1/comments/${commentId}/like`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) throw new Error('댓글 좋아요 실패');
+    const json = await res.json();
+    return json.data; // { likeCount: number, liked: boolean }
+  }
+  

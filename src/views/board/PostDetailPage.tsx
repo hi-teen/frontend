@@ -123,7 +123,7 @@ export default function PostDetailPage() {
           <span className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xl">{profile.emoji}</span>
           <div className="flex flex-col">
             <span className="font-bold text-[15px] text-gray-800">{profile.name}</span>
-            <span className="text-xs text-gray-400">{formatDate(detail.createdDate)}</span>
+            <span className="text-xs text-gray-400">{formatDate(detail.createdAt)}</span>
           </div>
         </div>
         {/* 제목/내용 */}

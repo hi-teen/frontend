@@ -51,7 +51,7 @@ export default function MyScrapsPage() {
             likes={post.loveCount}
             comments={0} // 댓글 수 없으면 임시 0 처리
             views={0}     // 조회 수 없으면 임시 0 처리
-            date={new Date(post.createdDate).toLocaleDateString('ko-KR')}
+            date={new Date(post.createdAt).toLocaleDateString('ko-KR')}
           />
         ))}
       </div>

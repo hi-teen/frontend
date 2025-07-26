@@ -14,7 +14,6 @@ const SearchModal = dynamic(() => import('../../../app/_component/SearchModal'),
   ssr: false,
 }) as React.ComponentType<{ onClose: () => void }>;
 
-
 export default function ProfilePage() {
   const router = useRouter();
   const [openSearch, setOpenSearch] = useState(false);
@@ -23,6 +22,30 @@ export default function ProfilePage() {
 
   const handleEdit = () => {
     router.push('/profile/edit');
+  };
+
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      router.replace('/login');
+      return;
+    }
+    try {
+      await fetch('https://hiteen.site/api/v1/auth/logout', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: '*/*',
+        },
+      });
+    } catch (e) {
+      // 에러 무시 (강제 로그아웃)
+    }
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('signupProfile');
+    router.replace('/login');
   };
 
   useEffect(() => {
@@ -110,15 +133,15 @@ export default function ProfilePage() {
         <div className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
           {user ? (
             <div className="flex items-center gap-3">
-             <div className="w-16 h-16 rounded-full flex items-center justify-center">
-              <Image
-                src="/profile.png"
-                alt="user icon"
-                width={60}
-                height={60}
-                className="object-cover"
-              />
-            </div>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center">
+                <Image
+                  src="/profile.png"
+                  alt="user icon"
+                  width={60}
+                  height={60}
+                  className="object-cover"
+                />
+              </div>
               <div className="text-sm leading-tight">
                 <p className="font-semibold">
                   {user.name ?? '-'}
@@ -171,14 +194,13 @@ export default function ProfilePage() {
           <p className="font-semibold text-sm">좋아요한 글</p>
           <ChevronRightIcon className="w-5 h-5 text-gray-400" />
         </div>
-        <div
+        {/* <div
           onClick={() => router.push('/profile/liked-comments')}
           className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
         >
           <p className="font-semibold text-sm">좋아요한 댓글</p>
           <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-        </div>
-
+        </div> */}
 
         {/* 고객 지원 */}
         <div className="bg-white p-4 rounded-2xl text-sm shadow-sm">
@@ -188,6 +210,14 @@ export default function ProfilePage() {
             <li className="hover:underline cursor-pointer">커뮤니티 정책</li>
           </ul>
         </div>
+
+        {/* 로그아웃 버튼 */}
+        <button
+          onClick={handleLogout}
+          className="block w-full mt-6 py-3 text-center text-red-500 font-semibold border border-red-200 rounded-2xl bg-white hover:bg-red-50 transition"
+        >
+          로그아웃
+        </button>
       </div>
 
       {openSearch && <SearchModal onClose={() => setOpenSearch(false)} />}
