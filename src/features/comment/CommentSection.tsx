@@ -172,7 +172,8 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
     try {
       const room = await sendAnonymousMessage({
         boardId,
-        commentId,
+        isBoardWriter: false,  // 댓글, 대댓글에서는 항상 false
+        anonymousNumber,       // 댓글 작성자 익명번호(반드시 숫자)
         content: ' ',
       });
       if (!room || !room.roomId) throw new Error('roomId 없음');

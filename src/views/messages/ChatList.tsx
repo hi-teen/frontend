@@ -18,7 +18,15 @@ export default function ChatList() {
 
   useEffect(() => {
     fetchMyRooms()
-      .then(setChatRooms)
+      .then((rooms) => {
+        setChatRooms(
+          rooms.map((room: any) => ({
+            roomId: room.roomId,
+            title: room.boardTitle,
+            lastMessage: room.lastMessage ?? '',
+          }))
+        );
+      })
       .catch(() => setChatRooms([]));
   }, []);
 

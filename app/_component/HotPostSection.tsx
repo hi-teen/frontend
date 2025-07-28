@@ -42,6 +42,8 @@ export default function HotPostSection({ posts }: Props) {
             comments={post.comments}
             views={post.views}
             date={formatDateTime(post.date)}
+            compact
+            showBoardBadge
           />
         ))}
       </div>

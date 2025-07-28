@@ -60,8 +60,8 @@ export default function MyPostsPage() {
               board={post.categoryLabel ?? '자유게시판'}
               content={post.content}
               likes={post.loveCount}
-              comments={0}
-              views={0}
+              comments={post.commentCount ?? 0}
+              views={post.viewCount ?? 0}
               date={post.createdAt}
             />
           ))}

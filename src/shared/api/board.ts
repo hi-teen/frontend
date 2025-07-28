@@ -10,6 +10,7 @@ export interface BoardItem {
   loveCount: number;
   scrapCount: number;
   viewCount: number;
+  commentCount: number;
   createdAt: string;
 }
 
@@ -61,20 +62,27 @@ export const fetchMyPosts = async (): Promise<BoardItem[]> => {
   }
   return json.data;
 };
-
-// 인기게시글 목록 조회
-export const fetchPopularBoards = async (): Promise<BoardItem[]> => {
+  
+// 인기 게시글 조회 (최대 3개)
+export async function fetchPopularBoards(): Promise<any[]> {
   const token = localStorage.getItem('accessToken');
-  if (!token) throw new Error('토큰 없음');
   const res = await fetch('https://hiteen.site/api/v1/boards/popular', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  const json = await res.json();
+  // 인기순 3개만
+  return Array.isArray(json.data) ? json.data.slice(0, 3) : [];
+}
+
+export async function fetchMyRooms() {
+  const token = localStorage.getItem('accessToken');
+  if (!token) throw new Error('로그인 필요');
+  const res = await fetch('https://hiteen.site/api/v1/messages/rooms', {
     headers: {
       Authorization: `Bearer ${token}`,
-      Accept: '*/*',
     },
   });
   const json = await res.json();
-  if (!json.data || !Array.isArray(json.data)) {
-    throw new Error('인기게시글 목록이 배열이 아님!');
-  }
+  if (!json.data || !Array.isArray(json.data)) return [];
   return json.data;
-};
+}

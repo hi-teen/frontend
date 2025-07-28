@@ -23,7 +23,6 @@ const allBoards = [
   { key: 'GRADE3', label: '3학년게시판', emoji: '3️⃣' },
 ];
 
-// HotPostSection에서 요구하는 타입과 정확히 일치시켜야 함!
 interface HotPost {
   id: number;
   title: string;
@@ -47,7 +46,7 @@ export default function HomePage() {
     favoriteBoards.includes(board.key)
   );
 
-  // 일반 게시판 리스트
+  // 게시판별 글 불러오기
   useEffect(() => {
     async function fetchAndGroupPosts() {
       try {
@@ -64,23 +63,21 @@ export default function HomePage() {
     fetchAndGroupPosts();
   }, [accessToken, favoriteBoards]);
 
-  // 인기 게시물
+  // 인기 게시물 불러오기
   useEffect(() => {
     async function fetchHotPosts() {
       try {
         const data = await fetchPopularBoards();
         setHotPosts(
-          data.map((item) => ({
+          (data ?? []).slice(0, 3).map((item) => ({
             id: item.id,
             title: item.title,
             board: item.categoryLabel,
             content: item.content,
             likes: item.loveCount,
-            comments: 0, // 필요 시 item.commentCount
+            comments: item.commentCount ?? 0,
             views: item.viewCount ?? 0,
-            date: item.createdAt
-              ? item.createdAt.slice(2, 10).replace(/-/g, '/') // 25/07/25
-              : '',
+            date: item.createdAt,
           }))
         );
       } catch (err) {
