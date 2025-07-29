@@ -11,5 +11,4 @@ export const signupFormAtom = atom({
   email: '',
   password: '',
   passwordConfirm: '',
-  nickname: '',
 });

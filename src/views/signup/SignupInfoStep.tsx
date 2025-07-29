@@ -12,24 +12,20 @@ export default function SignupInfoStep() {
 
   const [grade, setGrade] = useState('');
   const [classNumber, setClassNumber] = useState('');
-  const [nickname, setNickname] = useState('');
 
-  // 화면 처음 열릴 때 전역 상태에 저장된 값 보여주기 (수정 시 대비)
+  // 전역 상태의 값으로 초기화
   useEffect(() => {
     setGrade(form.gradeNumber ? String(form.gradeNumber) : '');
     setClassNumber(form.classNumber ? String(form.classNumber) : '');
-    setNickname(form.nickname || '');
   }, [form]);
 
   const handleNext = () => {
-    if (!grade || !classNumber || !nickname.trim()) return;
+    if (!grade || !classNumber) return;
 
-    // 전역 상태에 학년/반/닉네임 업데이트
     setForm((prev) => ({
       ...prev,
       gradeNumber: parseInt(grade, 10),
       classNumber: parseInt(classNumber, 10),
-      nickname: nickname.trim(),
     }));
 
     router.push('/signup/step/email');
@@ -46,7 +42,7 @@ export default function SignupInfoStep() {
             <input
               type="text"
               value={grade}
-              onChange={(e) => setGrade(e.target.value)}
+              onChange={(e) => setGrade(e.target.value.replace(/[^0-9]/g, ''))}
               className="w-full border-b-2 border-gray-300 focus:border-[#2269FF] outline-none py-2 text-base"
               placeholder="학년"
             />
@@ -57,22 +53,11 @@ export default function SignupInfoStep() {
             <input
               type="text"
               value={classNumber}
-              onChange={(e) => setClassNumber(e.target.value)}
+              onChange={(e) => setClassNumber(e.target.value.replace(/[^0-9]/g, ''))}
               className="w-full border-b-2 border-gray-300 focus:border-[#2269FF] outline-none py-2 text-base"
               placeholder="반"
             />
           </div>
-        </div>
-
-        <div className="mb-6">
-          <label className="text-sm text-gray-700 mb-1 block">닉네임</label>
-          <input
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            className="w-full border-b-2 border-gray-300 focus:border-[#2269FF] outline-none py-2 text-base"
-            placeholder="닉네임 입력"
-          />
         </div>
 
         <div className="mb-6">
@@ -102,9 +87,9 @@ export default function SignupInfoStep() {
 
       <button
         onClick={handleNext}
-        disabled={!grade || !classNumber || !nickname.trim()}
+        disabled={!grade || !classNumber}
         className={`w-full mt-8 py-4 rounded-xl text-white text-base font-semibold ${
-          grade && classNumber && nickname.trim() ? 'bg-[#2269FF]' : 'bg-gray-300'
+          grade && classNumber ? 'bg-[#2269FF]' : 'bg-gray-300'
         }`}
       >
         다음

@@ -14,7 +14,6 @@ export interface SignupFormData {
   password: string;
   passwordConfirm: string;
   name: string;
-  nickname: string;
   schoolId: number;
   schoolName?: string;
   gradeNumber: number;
@@ -25,7 +24,6 @@ export interface UserInfo {
   id?: number;
   email: string;
   name: string;
-  nickname?: string;
   gradeNumber: number;
   classNumber: number;
   school: SchoolInfo;
@@ -73,7 +71,6 @@ export async function signUpApi(form: SignupFormData): Promise<UserInfo> {
     JSON.stringify({
       email: data.data.email,
       name: data.data.name,
-      nickname: data.data.nickname ?? '',
       gradeNumber: data.data.gradeNumber,
       classNumber: data.data.classNumber,
       school: data.data.school,

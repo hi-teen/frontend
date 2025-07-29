@@ -3,18 +3,35 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-const fetchMe = async () => {
+interface MeData {
+  email: string;
+  name: string;
+  nickname: string;          // 서버가 요구하므로 상태에 유지
+  gradeNumber: number;
+  classNumber: number;
+  school: { schoolName: string };
+}
+
+const fetchMe = async (): Promise<MeData> => {
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('토큰 없음');
   const res = await fetch('https://hiteen.site/api/v1/members/me', {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error('내 정보 조회 실패');
-  const json = await res.json();
-  return json.data;
+  const { data } = await res.json();
+  return data;
 };
 
-const updateProfile = async (body: any) => {
+const updateProfile = async (body: {
+  email: string;
+  name: string;
+  nickname: string;         // 항상 포함
+  password: string;
+  passwordConfirm: string;
+  gradeNumber: number;
+  classNumber: number;
+}) => {
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('토큰 없음');
   const res = await fetch('https://hiteen.site/api/v1/members/me', {
@@ -29,75 +46,75 @@ const updateProfile = async (body: any) => {
     const text = await res.text();
     throw new Error(text || '프로필 수정 실패');
   }
-  const json = await res.json();
-  return json.data;
+  const { data } = await res.json();
+  return data;
 };
 
-// 학년/반을 "2학년 3반"에서 분리
 function parseGradeClass(str: string): { gradeNumber: number; classNumber: number } {
-  const match = str.match(/(\d+)\s*학년\s*(\d+)\s*반/);
-  if (match) {
-    return { gradeNumber: Number(match[1]), classNumber: Number(match[2]) };
-  }
-  // fallback
-  return { gradeNumber: 0, classNumber: 0 };
+  const m = str.match(/(\d+)\s*학년\s*(\d+)\s*반/);
+  return m
+    ? { gradeNumber: +m[1], classNumber: +m[2] }
+    : { gradeNumber: 0, classNumber: 0 };
 }
-function makeGradeClassStr(grade?: number, classNum?: number) {
-  if (!grade && !classNum) return '';
-  return `${grade ?? ''}학년 ${classNum ?? ''}반`;
+
+function makeGradeClassStr(g?: number, c?: number) {
+  return g && c ? `${g}학년 ${c}반` : '';
 }
 
 export default function EditProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
+  const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [school, setSchool] = useState('');
+  const [nickname, setNickname] = useState('');    // 상태만 유지
   const [classInfo, setClassInfo] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [schoolName, setSchoolName] = useState('');
 
   const [error, setError] = useState('');
 
-  // 기존 정보 불러오기
   useEffect(() => {
     (async () => {
       try {
         const data = await fetchMe();
-        setName(data.name || '');
-        setNickname(data.nickname || '');
-        setSchool(data.school?.schoolName || '');
+        setEmail(data.email);
+        setName(data.name);
+        setNickname(data.nickname ?? '');          // 불러와 저장
+        setSchoolName(data.school.schoolName);
         setClassInfo(makeGradeClassStr(data.gradeNumber, data.classNumber));
-      } catch (e: any) {
+      } catch {
         setError('내 정보를 불러올 수 없습니다.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, []);
 
   const handleSave = async () => {
     setError('');
-    if (!name.trim()) {
-      setError('이름을 입력하세요.');
-      return;
-    }
-    if (!school.trim()) {
-      setError('학교명을 입력하세요.');
-      return;
-    }
+    if (!email.trim())    return setError('이메일을 입력하세요.');
+    if (!name.trim())     return setError('이름을 입력하세요.');
+    if (!password.trim()) return setError('비밀번호를 입력해주세요.');
+    if (!passwordConfirm.trim()) return setError('비밀번호 확인을 입력해주세요.');
+    if (password !== passwordConfirm) return setError('비밀번호가 일치하지 않습니다.');
+
     const { gradeNumber, classNumber } = parseGradeClass(classInfo);
 
     try {
       await updateProfile({
-        name,
-        nickname,
+        email: email.trim(),
+        name: name.trim(),
+        nickname: nickname.trim(),               // 빈 문자열이라도 포함
+        password,
+        passwordConfirm,
         gradeNumber,
         classNumber,
       });
       router.push('/profile');
     } catch (e: any) {
-      setError(
-        e.message?.includes('409') ? '이미 사용중인 닉네임입니다.' : e.message || '저장 실패'
-      );
+      setError(e.message || '저장 실패');
     }
   };
 
@@ -109,62 +126,94 @@ export default function EditProfilePage() {
         <div className="text-center text-gray-400 pt-12">불러오는 중...</div>
       ) : (
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSave();
-          }}
+          onSubmit={e => { e.preventDefault(); handleSave(); }}
           className="space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">이름 <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium mb-1">
+              이메일 <span className="text-red-500">*</span>
+            </label>
             <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
-              maxLength={15}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">닉네임</label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
-              maxLength={15}
-              placeholder="선택 (중복 불가)"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">학교 <span className="text-red-500">*</span></label>
-            <input
-              type="text"
-              value={school}
-              onChange={(e) => setSchool(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
-              readOnly
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">학년 / 반</label>
-            <input
-              type="text"
-              value={classInfo}
-              onChange={(e) => setClassInfo(e.target.value.replace(/[^0-9학년반 ]/g, ''))}
-              placeholder="예: 2학년 3반"
-              className="w-full border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
-              maxLength={12}
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="w-full border rounded-xl px-4 py-2 text-sm"
             />
           </div>
 
-          {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              이름 <span className="text-red-500">*</span>
+            </label>
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full border rounded-xl px-4 py-2 text-sm"
+            />
+          </div>
+
+          {/*
+          닉네임 입력은 UI에서 제거했습니다.
+          <input type="hidden" value={nickname} />
+          */}
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              학교
+            </label>
+            <input
+              value={schoolName}
+              readOnly
+              className="w-full border rounded-xl px-4 py-2 text-sm bg-gray-100"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              학년/반
+            </label>
+            <input
+              value={classInfo}
+              onChange={e =>
+                setClassInfo(e.target.value.replace(/[^0-9학년반 ]/g, ''))
+              }
+              placeholder="예: 2학년 3반"
+              className="w-full border rounded-xl px-4 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              비밀번호 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full border rounded-xl px-4 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              비밀번호 확인 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              value={passwordConfirm}
+              onChange={e => setPasswordConfirm(e.target.value)}
+              className="w-full border rounded-xl px-4 py-2 text-sm"
+            />
+          </div>
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button
             type="submit"
-            className="mt-8 w-full bg-[#2269FF] text-white font-semibold py-3 rounded-xl text-sm"
             disabled={loading}
+            className={`w-full py-3 rounded-xl text-white ${
+              loading ? 'bg-gray-300' : 'bg-[#2269FF]'
+            }`}
           >
             저장
           </button>
