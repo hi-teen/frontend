@@ -9,13 +9,17 @@ import {
   replyCommentAtom,
   CommentItemType,
 } from '@/entities/auth/model/commentAtom';
-import { fetchComments, postComment, postReply } from '@/shared/api/comment';
+import {
+  fetchComments,
+  postComment,
+  postReply,
+  toggleCommentLike,
+} from '@/shared/api/comment';
 import {
   HeartIcon,
   PaperAirplaneIcon,
   ArrowUturnRightIcon,
 } from '@heroicons/react/24/solid';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { sendAnonymousMessage } from '@/shared/api/message';
 
@@ -24,58 +28,124 @@ interface CommentSectionProps {
   onCommentCountChange: (count: number) => void;
 }
 
-export default function CommentSection({ boardId, onCommentCountChange }: CommentSectionProps) {
+// 댓글·대댓글 아바타 대신 사용할 이모지 목록
+const emojis = [
+  '🐶','🐱','🐰','🐻','🐼','🦊','🐯','🦁',
+  '🐵','🦄','🐸','🐷','🐥','🦖','🦉','🦦'
+];
+
+// "YY/MM/DD HH:MM" 형태로 포맷팅
+function formatDateTime(datetime?: string) {
+  if (!datetime) return '';
+  const [date, time] = datetime.split(/[ T]/);
+  if (!date || !time) return datetime;
+  const [year, month, day] = date.split('-');
+  const [hh, mm] = time.split(':');
+  return `${year.slice(2)}/${month}/${day} ${hh}:${mm}`;
+}
+
+export default function CommentSection({
+  boardId,
+  onCommentCountChange,
+}: CommentSectionProps) {
+  const router = useRouter();
   const [comments, setComments] = useAtom(commentListAtom);
   const [comment, setComment] = useAtom(newCommentAtom);
   const [replyTo, setReplyTo] = useAtom(replyTargetAtom);
   const [replyContent, setReplyContent] = useAtom(replyCommentAtom);
-  const router = useRouter();
 
+  // 댓글 + 대댓글 불러오기
   useEffect(() => {
     fetchComments(boardId)
       .then((data) => {
-        const parsedData: CommentItemType[] = data.map((comment: any) => ({
-          ...comment,
-          anonymousNumber: comment.anonymousNumber ?? 0,
-          replies: (comment.replies ?? []).map((reply: any) => ({
-            ...reply,
-            anonymousNumber: reply.anonymousNumber ?? 0,
-            createdDate: reply.createdDate ?? '',
+        const parsed: CommentItemType[] = data.map((c: any) => ({
+          ...c,
+          anonymousNumber: c.anonymousNumber ?? 0,
+          likedByMe: c.likedByMe ?? false,
+          likeCount: c.likeCount ?? 0,
+          idBoardWriter: c.idBoardWriter ?? false,
+          replies: (c.replies ?? []).map((r: any) => ({
+            ...r,
+            anonymousNumber: r.anonymousNumber ?? 0,
+            createdAt: r.createdAt ?? '',
+            likedByMe: r.likedByMe ?? false,
+            likeCount: r.likeCount ?? 0,
+            idBoardWriter: r.idBoardWriter ?? false,
           })),
         }));
-        setComments(parsedData);
-        const count =
-          parsedData.length +
-          parsedData.reduce((sum, c) => sum + (c.replies?.length ?? 0), 0);
-        onCommentCountChange(count);
+        setComments(parsed);
+        const totalCount =
+          parsed.length +
+          parsed.reduce((sum, c) => sum + (c.replies?.length ?? 0), 0);
+        onCommentCountChange(totalCount);
       })
       .catch(console.error);
   }, [boardId, setComments, onCommentCountChange]);
 
+  // 댓글 좋아요 토글
+  const handleToggleCommentLike = async (commentId: number) => {
+    try {
+      const data = await toggleCommentLike(commentId);
+      setComments((prev) =>
+        prev.map((c) =>
+          c.commentId === commentId
+            ? { ...c, likedByMe: data.liked, likeCount: data.likeCount }
+            : c
+        )
+      );
+    } catch {
+      alert('댓글 좋아요 실패');
+    }
+  };
+
+  // 대댓글 좋아요 토글
+  const handleToggleReplyLike = async (replyId: number) => {
+    try {
+      const data = await toggleCommentLike(replyId);
+      setComments((prev) =>
+        prev.map((c) => ({
+          ...c,
+          replies: c.replies?.map((r) =>
+            r.replyId === replyId
+              ? { ...r, likedByMe: data.liked, likeCount: data.likeCount }
+              : r
+          ) ?? [],
+        }))
+      );
+    } catch {
+      alert('대댓글 좋아요 실패');
+    }
+  };
+
+  // 댓글 작성
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) return;
     try {
-      const newComment = await postComment(boardId, comment);
-      const updated: CommentItemType[] = [
+      const newC = await postComment(boardId, comment);
+      const updated = [
         ...comments,
         {
-          ...newComment,
-          anonymousNumber: newComment.anonymousNumber ?? 0,
+          ...newC,
+          anonymousNumber: newC.anonymousNumber ?? 0,
+          likedByMe: newC.likedByMe ?? false,
+          likeCount: newC.likeCount ?? 0,
+          idBoardWriter: newC.idBoardWriter ?? false,
           replies: [],
         },
       ];
       setComments(updated);
       setComment('');
-      const count =
+      const totalCount =
         updated.length +
         updated.reduce((sum, c) => sum + (c.replies?.length ?? 0), 0);
-      onCommentCountChange(count);
+      onCommentCountChange(totalCount);
     } catch (err) {
       console.error(err);
     }
   };
 
+  // 대댓글 작성
   const handleReplySubmit = async (
     e: React.FormEvent,
     parentId: number
@@ -84,29 +154,36 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
     if (!replyContent.trim()) return;
     try {
       await postReply(parentId, replyContent);
+      // 전체 다시 불러오기
       const data = await fetchComments(boardId);
-      const parsedData: CommentItemType[] = data.map((comment: any) => ({
-        ...comment,
-        anonymousNumber: comment.anonymousNumber ?? 0,
-        replies: (comment.replies ?? []).map((reply: any) => ({
-          ...reply,
-          anonymousNumber: reply.anonymousNumber ?? 0,
-          createdDate: reply.createdDate ?? '',
+      const parsed: CommentItemType[] = data.map((c: any) => ({
+        ...c,
+        anonymousNumber: c.anonymousNumber ?? 0,
+        likedByMe: c.likedByMe ?? false,
+        likeCount: c.likeCount ?? 0,
+        idBoardWriter: c.idBoardWriter ?? false,
+        replies: (c.replies ?? []).map((r: any) => ({
+          ...r,
+          anonymousNumber: r.anonymousNumber ?? 0,
+          createdAt: r.createdAt ?? '',
+          likedByMe: r.likedByMe ?? false,
+          likeCount: r.likeCount ?? 0,
+          idBoardWriter: r.idBoardWriter ?? false,
         })),
       }));
-      setComments(parsedData);
+      setComments(parsed);
       setReplyContent('');
       setReplyTo(null);
-      const count =
-        parsedData.length +
-        parsedData.reduce((sum, c) => sum + (c.replies?.length ?? 0), 0);
-      onCommentCountChange(count);
+      const totalCount =
+        parsed.length +
+        parsed.reduce((sum, c) => sum + (c.replies?.length ?? 0), 0);
+      onCommentCountChange(totalCount);
     } catch (err) {
       console.error(err);
     }
   };
 
-  // 쪽지: 클릭 시 바로 채팅방 이동
+  // 쪽지 보내기
   const handleSendMessage = async (
     commentId: number,
     anonymousNumber: number
@@ -114,10 +191,11 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
     try {
       const room = await sendAnonymousMessage({
         boardId,
-        commentId,
-        content: ' ', 
+        isBoardWriter: false,
+        anonymousNumber,
+        content: ' ',
       });
-      if (!room || !room.roomId) throw new Error('roomId 없음');
+      if (!room?.roomId) throw new Error('roomId 없음');
       router.push(`/messages/${room.roomId}`);
     } catch (e) {
       console.error('쪽지 전송 실패', e);
@@ -127,87 +205,137 @@ export default function CommentSection({ boardId, onCommentCountChange }: Commen
 
   return (
     <section className="bg-white">
-      <div className="space-y-6">
-        {comments.map((c) => (
-          <div key={c.commentId} className="px-4 border-t border-gray-200 pt-4 relative">
-            <div className="absolute top-2 right-4 flex gap-3 text-gray-400">
-              <button>
-                <HeartIcon className="w-4 h-4" />
-              </button>
-              <button onClick={() => setReplyTo(c.commentId)}>
-                <ArrowUturnRightIcon className="w-4 h-4" />
-              </button>
-              {c.anonymousNumber != null && (
-                <button onClick={() => handleSendMessage(c.commentId, c.anonymousNumber)}>
-                  <PaperAirplaneIcon className="w-4 h-4" />
+      <div className="space-y-4">
+        {comments.map((c) => {
+          const avatar = emojis[c.commentId % emojis.length];
+          return (
+            <div
+              key={c.commentId}
+              className="px-4 border-t border-gray-200 pt-4 relative"
+            >
+              <div className="absolute top-4 right-4 flex items-center gap-2 text-gray-400">
+                <button onClick={() => handleToggleCommentLike(c.commentId)}>
+                  <HeartIcon
+                    className={`w-3.5 h-3.5 ${
+                      c.likedByMe ? 'text-red-500' : 'text-gray-400'
+                    }`}
+                  />
                 </button>
-              )}
-            </div>
-            <div className="flex items-start gap-2 text-sm text-gray-800">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center">
-                <Image src="/profile.png" alt="user" width={40} height={40} />
+                <span className="text-xs">{c.likeCount}</span>
+                <button onClick={() => setReplyTo(c.commentId)}>
+                  <ArrowUturnRightIcon className="w-3.5 h-3.5" />
+                </button>
+                {c.anonymousNumber != null && (
+                  <button
+                    onClick={() =>
+                      handleSendMessage(c.commentId, c.anonymousNumber)
+                    }
+                  >
+                    <PaperAirplaneIcon className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">익명{c.anonymousNumber ?? 0}</span>
-                  <span className="text-xs text-gray-400">{c.createdDate ?? ''}</span>
+
+              <div className="flex items-start gap-2 text-sm text-gray-800">
+                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xl">
+                  {avatar}
                 </div>
-                <p className="mt-1 text-sm text-black">{c.content ?? ''}</p>
-
-                {replyTo === c.commentId && (
-                  <form onSubmit={(e) => handleReplySubmit(e, c.commentId)} className="mt-2 flex gap-2">
-                    <input
-                      type="text"
-                      value={replyContent}
-                      onChange={(e) => setReplyContent(e.target.value)}
-                      placeholder="대댓글을 입력하세요"
-                      className="flex-1 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button type="submit" className="text-blue-500 font-semibold text-sm px-3">
-                      작성
-                    </button>
-                  </form>
-                )}
-
-                {Array.isArray(c.replies) && c.replies.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    {c.replies.map((reply) => (
-                      <div
-                        key={reply.replyId}
-                        className="p-2 bg-gray-50 rounded-xl border border-gray-100 relative"
-                      >
-                        <div className="absolute top-2 right-2 flex gap-2 text-gray-400">
-                          <button>
-                            <HeartIcon className="w-4 h-4" />
-                          </button>
-                          <button>
-                            <ArrowUturnRightIcon className="w-4 h-4" />
-                          </button>
-                          {reply.anonymousNumber != null && (
-                            <button
-                              onClick={() =>
-                                handleSendMessage(c.commentId, reply.anonymousNumber!)
-                              }
-                            >
-                              <PaperAirplaneIcon className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-sm text-blue-600">
-                            익명{reply.anonymousNumber ?? 0}
-                          </span>
-                          <span className="text-xs text-gray-400">{reply.createdDate ?? ''}</span>
-                        </div>
-                        <p className="text-sm text-gray-800 mt-1">{reply.content ?? ''}</p>
-                      </div>
-                    ))}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">
+                      {c.idBoardWriter ? '작성자' : `익명${c.anonymousNumber}`}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {formatDateTime(c.createdAt)}
+                    </span>
                   </div>
-                )}
+                  <p className="mt-1 text-sm text-black">{c.content}</p>
+
+                  {replyTo === c.commentId && (
+                    <form
+                      onSubmit={(e) => handleReplySubmit(e, c.commentId)}
+                      className="mt-2 flex gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        placeholder="대댓글을 입력하세요"
+                        className="flex-1 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="submit"
+                        className="text-blue-500 font-semibold text-sm px-3"
+                      >
+                        작성
+                      </button>
+                    </form>
+                  )}
+
+                  {c.replies.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {c.replies.map((r) => {
+                        const replyAvatar =
+                          emojis[r.replyId % emojis.length];
+                        return (
+                          <div
+                            key={r.replyId}
+                            className="p-2 bg-gray-50 rounded-xl border border-gray-100 relative"
+                          >
+                            <div className="absolute top-2 right-2 flex gap-2 text-gray-400 items-center">
+                              <button onClick={() => handleToggleReplyLike(r.replyId)}>
+                                <HeartIcon
+                                  className={`w-3.5 h-3.5 ${
+                                    r.likedByMe
+                                      ? 'text-red-500'
+                                      : 'text-gray-400'
+                                  }`}
+                                />
+                              </button>
+                              <span className="text-xs">{r.likeCount}</span>
+                              <button>
+                                <ArrowUturnRightIcon className="w-3.5 h-3.5" />
+                              </button>
+                              {r.anonymousNumber != null && (
+                                <button
+                                  onClick={() =>
+                                    handleSendMessage(
+                                      c.commentId,
+                                      r.anonymousNumber
+                                    )
+                                  }
+                                >
+                                  <PaperAirplaneIcon className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg">
+                                {replyAvatar}
+                              </div>
+                              <span className="font-semibold text-sm text-blue-600">
+                                {r.idBoardWriter
+                                  ? '작성자'
+                                  : `익명${r.anonymousNumber}`}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {formatDateTime(r.createdAt)}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-800 mt-1">
+                              {r.content}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <form

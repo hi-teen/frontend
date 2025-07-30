@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { fetchTimeTable, getMySchoolInfo } from "@/shared/api/timetable";
+import type { UserInfo } from "@/entities/auth/types";
 
 const periods = [
   { period: 1, start: "09:00", end: "09:50" },
@@ -14,10 +15,8 @@ const periods = [
   { period: 7, start: "16:00", end: "16:50" }
 ];
 
-// 요일 정보
 const days = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
 
-// 오늘 기준 현재 교시 및 쉬는시간 여부 판별
 function getCurrentPeriodInfo() {
   const now = new Date();
   const todayStr = now.toLocaleDateString("en-CA");
@@ -34,7 +33,6 @@ function getCurrentPeriodInfo() {
   return { current: -1, isBreak: false };
 }
 
-// 오늘 실제 마지막 수업 종료 시각 구하기
 function getLastPeriodEndTime(todaySubjects: string[]) {
   if (!todaySubjects || todaySubjects.length === 0) return null;
   const lastIdx = todaySubjects.length - 1;
@@ -43,14 +41,13 @@ function getLastPeriodEndTime(todaySubjects: string[]) {
   return new Date(`${todayStr}T${lastPeriod.end}:00`);
 }
 
-// 학교 url 가져오기 (기존 코드)
 function getSchoolUrl(): string | null {
   if (typeof window === 'undefined') return null;
-  const profile = localStorage.getItem('signupProfile');
-  if (!profile) return null;
+  const profileStr = localStorage.getItem('signupProfile');
+  if (!profileStr) return null;
   try {
-    const parsed = JSON.parse(profile);
-    let url = parsed?.school?.schoolUrl;
+    const profile: Partial<UserInfo> = JSON.parse(profileStr);
+    let url = profile.school?.schoolUrl;
     if (!url) return null;
     if (!/^https?:\/\//.test(url)) {
       url = 'http://' + url;
@@ -83,13 +80,11 @@ export default function QuickMenu() {
         const todayIndex = new Date().getDay();
         const today = days[todayIndex];
 
-        // 오늘 요일의 과목만 꺼냄 (교시 순으로 정렬)
         const subjectsArr = (data[today] || [])
-        .sort((a: { period: number; subject: string }, b: { period: number; subject: string }) => a.period - b.period)
+          .sort((a: { period: number; subject: string }, b: { period: number; subject: string }) => a.period - b.period)
           .map((row: any) => row.subject || "수업 없음");
         setTodaySubjects(subjectsArr);
 
-        // 다음 평일(수업 있는 날)의 첫 수업 찾기 (내일, 모레 등)
         let nextIdx = todayIndex + 1;
         let searched = false;
         while (!searched) {
@@ -117,7 +112,6 @@ export default function QuickMenu() {
   const now = new Date();
   const lastPeriodEndTime = getLastPeriodEndTime(todaySubjects);
 
-  // 오늘 모든 수업이 끝난 경우
   const isTodayAllFinished =
     lastPeriodEndTime && now > lastPeriodEndTime;
 
@@ -128,13 +122,11 @@ export default function QuickMenu() {
   let nextPeriodTime = "";
 
   if (isTodayAllFinished && nextDayFirstSubject) {
-    // 오늘 수업이 모두 끝났으면 내일/다음 평일의 첫 교시!
     nowSubject = "수업 전";
     nextSubject = nextDayFirstSubject.subject;
     nextPeriodLabel = `${nextDayFirstSubject.period}교시`;
     nextPeriodTime = periods[nextDayFirstSubject.period - 1].start;
   } else if (current >= 0 && todaySubjects[current]) {
-    // 지금 시간에 해당하는 교시/쉬는시간
     nowSubject = todaySubjects[current];
     periodLabel = `${current + 1}교시 · ${periods[current].start}`;
     if (current < periods.length - 1 && todaySubjects[current + 1]) {
@@ -143,7 +135,6 @@ export default function QuickMenu() {
       nextPeriodTime = periods[current + 1].start;
     }
   } else if (current === -1 && todaySubjects.length > 0) {
-    // 아침 등교 전
     nowSubject = "수업 전";
     nextSubject = todaySubjects[0];
     nextPeriodLabel = `1교시`;
@@ -162,16 +153,14 @@ export default function QuickMenu() {
         <div className='w-[64px] h-[72px] bg-[#E9F0FF] rounded-[10px] flex items-center justify-center'>
           <Image src='/homeicon.png' alt='학교 홈' width={44} height={44} />
         </div>
-         </button>
+      </button>
 
       <div className='flex-1 bg-[#E9F0FF] rounded-[10px] px-4 py-3 flex justify-between items-center h-[72px] min-w-[180px]'>
-        {/* 지금 수업 (왼쪽) */}
         <div className="flex flex-col justify-center">
           <span className='text-xs text-[#656565] font-semibold'>지금 수업</span>
           <span className='text-lg font-bold text-[#2269FF]'>{nowSubject}</span>
           <span className='text-xs text-gray-500'>{periodLabel}</span>
         </div>
-        {/* 다음 수업 (오른쪽) */}
         {nextSubject && (
           <div className="flex flex-col items-end ml-3">
             <span className='text-xs text-[#656565] font-semibold mt-2'>다음 수업</span>

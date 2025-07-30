@@ -19,8 +19,8 @@ export default function PostList({ posts, selectedBoard }: Props) {
           board={selectedBoard === 'ALL' ? post.categoryLabel : ''}
           content={post.content}
           likes={post.loveCount}
-          comments={0}
-          views={0}
+          comments={post.commentCount}
+          views={post.viewCount}
         />
       ))}
     </div>

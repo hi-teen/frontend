@@ -14,7 +14,6 @@ export interface SignupFormData {
   password: string;
   passwordConfirm: string;
   name: string;
-  nickname: string;
   schoolId: number;
   schoolName?: string;
   gradeNumber: number;
@@ -25,15 +24,14 @@ export interface UserInfo {
   id?: number;
   email: string;
   name: string;
-  nickname: string;
   gradeNumber: number;
   classNumber: number;
   school: SchoolInfo;
   schoolId?: number;
-  schoolName?: string; 
+  schoolName?: string;
 }
 
-// fetch 응답 안전하게 파싱
+// 안전하게 JSON 파싱
 async function safeParseResponse(res: Response) {
   const contentType = res.headers.get("content-type");
   const text = await res.text();
@@ -66,22 +64,20 @@ export async function signUpApi(form: SignupFormData): Promise<UserInfo> {
     throw new Error(msg);
   }
 
-  if (!data) throw new Error('서버 응답이 JSON 형식이 아님');
+  if (!data || !data.data) throw new Error('서버 응답이 JSON 형식이 아님');
 
-  // 회원가입 정보 저장 (school 전체 포함)
   localStorage.setItem(
     'signupProfile',
     JSON.stringify({
-      email: data.email,
-      name: data.name,
-      nickname: data.nickname,
-      gradeNumber: data.gradeNumber,
-      classNumber: data.classNumber,
-      school: data.school,
+      email: data.data.email,
+      name: data.data.name,
+      gradeNumber: data.data.gradeNumber,
+      classNumber: data.data.classNumber,
+      school: data.data.school,
     })
   );
 
-  return data;
+  return data.data;
 }
 
 // 로그인 API
@@ -105,7 +101,7 @@ export const loginApi = async (
     throw new Error(msg);
   }
 
-  if (!data || !data.accessToken) {
+  if (!data || !data.data || !data.data.accessToken) {
     const msg =
       (data && (data.header?.message || data.message)) ||
       text ||
@@ -113,16 +109,19 @@ export const loginApi = async (
     throw new Error(msg);
   }
 
-  localStorage.setItem('accessToken', data.accessToken);
-  localStorage.setItem('refreshToken', data.refreshToken);
+  localStorage.setItem('accessToken', data.data.accessToken);
+  localStorage.setItem('refreshToken', data.data.refreshToken);
 
-  return { accessToken: data.accessToken, refreshToken: data.refreshToken };
+  return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
-// 토큰 재발급 API
+// 토큰 재발급 API (★로그아웃 및 안내 추가)
 export const reissueToken = async (): Promise<{ accessToken: string; refreshToken: string }> => {
   const refreshToken = localStorage.getItem('refreshToken');
-  if (!refreshToken) throw new Error('리프레시 토큰 없음');
+  if (!refreshToken) {
+    handleTokenExpired();
+    throw new Error('리프레시 토큰 없음');
+  }
 
   const res = await fetch('https://hiteen.site/api/v1/auth/reissue', {
     method: 'POST',
@@ -132,7 +131,8 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
 
   const { data, text } = await safeParseResponse(res);
 
-  if (!res.ok) {
+  if (!res.ok || !data?.data?.accessToken) {
+    handleTokenExpired();
     throw new Error(
       (data && data.message) ||
       text ||
@@ -140,33 +140,43 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
     );
   }
 
-  if (!data || !data.accessToken) {
-    throw new Error('토큰 재발급에 실패했습니다.');
-  }
+  localStorage.setItem('accessToken', data.data.accessToken);
+  localStorage.setItem('refreshToken', data.data.refreshToken);
 
-  localStorage.setItem('accessToken', data.accessToken);
-  localStorage.setItem('refreshToken', data.refreshToken);
-
-  return { accessToken: data.accessToken, refreshToken: data.refreshToken };
+  return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
-// 로그인된 사용자 정보 가져오기 (자동 토큰 재발급 지원)
+// 토큰 만료/재발급 실패시 강제 로그아웃 함수
+function handleTokenExpired() {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  alert('로그인 세션이 만료되었습니다. 다시 로그인 해주세요.');
+  window.location.href = '/login'; // 로그인 경로 맞게 수정
+}
+
+// 내 정보 조회 (members/me)
 export const fetchMe = async (): Promise<UserInfo> => {
   let token = localStorage.getItem('accessToken');
-  if (!token) throw new Error('토큰 없음');
+  if (!token) {
+    handleTokenExpired();
+    throw new Error('토큰 없음');
+  }
 
-  let res = await fetch('https://hiteen.site/api/v1/auth/me', {
+  let res = await fetch('https://hiteen.site/api/v1/members/me', {
     headers: {
       Authorization: `Bearer ${token}`,
+      'Accept': 'application/json',
     },
   });
 
-  if (res.status === 401) {
+  if (res.status === 401 || res.status === 403) {
+    // 토큰 재발급 시도 → 실패시 handleTokenExpired가 처리
     const { accessToken } = await reissueToken();
     token = accessToken;
-    res = await fetch('https://hiteen.site/api/v1/auth/me', {
+    res = await fetch('https://hiteen.site/api/v1/members/me', {
       headers: {
         Authorization: `Bearer ${token}`,
+        'Accept': 'application/json',
       },
     });
   }
@@ -174,53 +184,63 @@ export const fetchMe = async (): Promise<UserInfo> => {
   const { data, text } = await safeParseResponse(res);
 
   if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      handleTokenExpired();
+    }
     throw new Error(text || '유저 정보 가져오기 실패');
   }
 
-  if (!data) {
+  if (!data || !data.data) {
+    handleTokenExpired();
     throw new Error('서버 응답이 JSON 형식이 아님');
   }
 
-  return {
-    id: data.id ?? 0,
-    email: data.email ?? '',
-    name: data.name ?? '',
-    nickname: data.nickname ?? '',
-    gradeNumber: data.gradeNumber ?? 0,
-    classNumber: data.classNumber ?? 0,
-    school: data.school || {
-      id: 0, schoolName: '', schoolCode: '', eduOfficeCode: '', eduOfficeName: '', schoolUrl: '',
-    },
-  };
+  return data.data;
 };
 
+// 인증 토큰 기반 fetch
 export async function fetchWithAuth(
   input: RequestInfo,
   init?: RequestInit
 ): Promise<Response> {
   let token = localStorage.getItem('accessToken');
-  if (!token) throw new Error('토큰 없음');
+  if (!token) {
+    handleTokenExpired();
+    throw new Error('토큰 없음');
+  }
 
   let res = await fetch(input, {
     ...init,
     headers: {
       ...(init?.headers || {}),
       Authorization: `Bearer ${token}`,
+      'Accept': 'application/json',
     },
   });
 
-  // 만료(401/403)시 refresh → access 재시도
   if (res.status === 401 || res.status === 403) {
-    const { accessToken } = await reissueToken();
-    token = accessToken;
-    res = await fetch(input, {
-      ...init,
-      headers: {
-        ...(init?.headers || {}),
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const { accessToken } = await reissueToken();
+      token = accessToken;
+      res = await fetch(input, {
+        ...init,
+        headers: {
+          ...(init?.headers || {}),
+          Authorization: `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+      if (res.status === 401 || res.status === 403) {
+        handleTokenExpired();
+        throw new Error('세션 만료, 다시 로그인하세요');
+      }
+    } catch (e) {
+      // reissueToken에서 이미 처리됨
+      throw e;
+    }
   }
 
   return res;
 }
+
+export { safeParseResponse };

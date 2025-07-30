@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import PostCard from './PostCard';
 
@@ -19,39 +19,67 @@ interface SearchModalProps {
   onClose: () => void;
 }
 
-interface Props {
-    onClose: () => void;
-  }
-
-const dummyPosts: Post[] = [
-  {
-    id: 1,
-    title: '종강 언제에요?',
-    board: '자유게시판',
-    content: '정확한 일정 아시는 분?',
-    likes: 10,
-    comments: 2,
-    views: 120,
-    date: '3일 전',
-  },
-  {
-    id: 2,
-    title: '시험 범위 공유해요',
-    board: '정보게시판',
-    content: '수학은 3단원까지래요',
-    likes: 4,
-    comments: 3,
-    views: 89,
-    date: '5일 전',
-  },
-];
+// 검색 결과 API 타입 변환 함수
+function mapApiToPost(item: any): Post {
+  return {
+    id: item.id,
+    title: item.title,
+    board: item.categoryLabel,
+    content: item.content,
+    likes: item.loveCount,
+    comments: 0, // 댓글 수는 필요하다면 API에서 받아와서 할당
+    views: item.viewCount,
+    date: item.createdAt
+      ? item.createdAt.slice(2, 10).replace(/-/g, '/') // 25/07/25
+      : '',
+  };
+}
 
 export default function SearchModal({ onClose }: SearchModalProps) {
   const [keyword, setKeyword] = useState('');
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [touched, setTouched] = useState(false);
 
-  const filteredPosts = dummyPosts.filter((post) =>
-    post.title.includes(keyword) || post.content.includes(keyword)
-  );
+  const timer = useRef<NodeJS.Timeout | null>(null);
+
+  // 디바운싱 검색
+  useEffect(() => {
+    if (!touched) return;
+    if (!keyword.trim()) {
+      setPosts([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      const token = localStorage.getItem('accessToken');
+      fetch(
+        `https://hiteen.site/api/v1/boards/search?keyword=${encodeURIComponent(keyword)}`,
+        {
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : undefined,
+        }
+      )
+        .then((res) => (res.ok ? res.json() : Promise.reject('검색 실패')))
+        .then((res) => {
+          if (Array.isArray(res.data)) {
+            setPosts(res.data.map(mapApiToPost));
+          } else {
+            setPosts([]);
+          }
+        })
+        .catch(() => setPosts([]))
+        .finally(() => setLoading(false));
+    }, 350);
+
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [keyword, touched]);
 
   return (
     <div className="fixed inset-0 bg-black/30 z-50 flex justify-center items-start pt-20 px-4">
@@ -66,14 +94,19 @@ export default function SearchModal({ onClose }: SearchModalProps) {
           type="text"
           placeholder="검색어를 입력하세요"
           value={keyword}
+          onFocus={() => setTouched(true)}
           onChange={(e) => setKeyword(e.target.value)}
           className="w-full border rounded-md px-3 py-2 text-sm mb-4"
         />
         <div className="space-y-3 max-h-96 overflow-y-auto">
-          {filteredPosts.length === 0 ? (
+          {!touched ? (
+            <p className="text-sm text-gray-400">검색어를 입력하세요.</p>
+          ) : loading ? (
+            <p className="text-sm text-gray-500">검색 중...</p>
+          ) : posts.length === 0 ? (
             <p className="text-sm text-gray-500">검색 결과가 없습니다.</p>
           ) : (
-            filteredPosts.map((post) => <PostCard key={post.id} {...post} />)
+            posts.map((post) => <PostCard key={post.id} {...post} />)
           )}
         </div>
       </div>

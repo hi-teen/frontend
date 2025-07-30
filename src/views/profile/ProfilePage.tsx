@@ -14,172 +14,136 @@ const SearchModal = dynamic(() => import('../../../app/_component/SearchModal'),
   ssr: false,
 }) as React.ComponentType<{ onClose: () => void }>;
 
-
 export default function ProfilePage() {
   const router = useRouter();
   const [openSearch, setOpenSearch] = useState(false);
   const [lovedPosts, setLovedPosts] = useState<BoardItem[]>([]);
   const [user, setUser] = useState<UserInfo | null>(null);
 
-  const handleEdit = () => {
-    router.push('/profile/edit');
+  const handleEdit = () => router.push('/profile/edit');
+  const handleLogout = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return router.replace('/login');
+    await fetch('https://hiteen.site/api/v1/auth/logout', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, Accept: '*/*' },
+    });
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('signupProfile');
+    router.replace('/login');
   };
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    // 좋아요한 글 불러오기 (실패시 무시)
     fetch('https://hiteen.site/api/v1/loves/me', {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => (res.ok ? res.json() : []))
+      .then(r => (r.ok ? r.json() : []))
       .then(setLovedPosts)
       .catch(() => setLovedPosts([]));
 
-    // 사용자 정보 불러오기 (실패 또는 값 없음 시 signupProfile fallback)
     fetchMe()
-      .then((data: UserInfo | null) => {
-        if (data && (data.name || data.nickname)) {
-          // school 필드 객체인 경우
-          if (typeof data.school === 'object' && data.school !== null) {
-            setUser({
-              ...data,
-              schoolId: data.school.id,
-              schoolName: data.school.schoolName,
-            });
-          } else {
-            setUser(data);
-          }
-        } else {
-          // fallback
-          const profileStr = localStorage.getItem('signupProfile');
-          if (profileStr) {
-            try {
-              const profile = JSON.parse(profileStr);
-              setUser({
-                ...profile,
-                email: profile.email ?? '',
-                schoolName: profile.schoolName ?? '',
-              });
-            } catch {
-              setUser(null);
-            }
-          } else {
-            setUser(null);
-          }
+      .then(data => {
+        if (data) {
+          setUser({
+            ...data,
+            schoolId: (data.school as any)?.id,
+            schoolName: (data.school as any)?.schoolName,
+          });
         }
       })
-      .catch(() => {
-        // fetchMe 실패시 fallback
-        const profileStr = localStorage.getItem('signupProfile');
-        if (profileStr) {
-          try {
-            const profile = JSON.parse(profileStr);
-            setUser({
-              ...profile,
-              email: profile.email ?? '',
-              schoolName: profile.schoolName ?? '',
-            });
-          } catch {
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
-      });
+      .catch(() => setUser(null));
   }, []);
 
   return (
     <>
-      {/* 상단 헤더 */}
       <header className="px-4 pt-5 flex justify-between items-start bg-gray-50 sticky top-0 z-50">
         <div className="flex flex-col">
-          <Link href="/">
-            <Image src="/hiteen.svg" alt="HiTeen 로고" width={72} height={24} priority />
-          </Link>
-          {user && (
-            <span className="text-xl font-bold mt-1">{user.schoolName ?? '-'}</span>
-          )}
+          <Link href="/"><Image src="/hiteen.svg" alt="로고" width={72} height={24} priority/></Link>
+          {user && <span className="text-xl font-bold mt-1">{user.schoolName}</span>}
         </div>
       </header>
 
-      {/* 프로필 본문 */}
       <div className="px-4 pt-4 pb-20 max-w-lg mx-auto bg-gray-50 space-y-6">
         {/* 프로필 박스 */}
         <div className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
           {user ? (
             <div className="flex items-center gap-3">
-             <div className="w-16 h-16 rounded-full flex items-center justify-center">
-              <Image
-                src="/profile.png"
-                alt="user icon"
-                width={60}
-                height={60}
-                className="object-cover"
-              />
-            </div>
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                <Image src="/profile.png" alt="유저아이콘" width={60} height={60}/>
+              </div>
               <div className="text-sm leading-tight">
-                <p className="font-semibold">
-                  {user.name ?? '-'}
-                  {user.nickname ? (
-                    <span className="ml-2 text-xs text-blue-600">({user.nickname})</span>
-                  ) : null}
-                </p>
-                <p className="text-gray-500">{user.schoolName ?? '-'}</p>
-                <p className="text-gray-400 text-xs">{user.email ?? '-'}</p>
+                <p className="font-semibold">{user.name}</p>
+                <p className="text-gray-500">{user.schoolName}</p>
+                <p className="text-gray-400 text-xs">{user.email}</p>
                 <p className="text-gray-400 text-xs">
-                  {(user.gradeNumber ? `${user.gradeNumber}학년 ` : '') +
-                    (user.classNumber ? `${user.classNumber}반` : '')}
+                  {user.gradeNumber}학년 {user.classNumber}반
                 </p>
               </div>
             </div>
           ) : (
             <div className="flex-1 text-gray-400">로그인 정보를 불러올 수 없습니다.</div>
           )}
-          <button onClick={handleEdit} className="text-sm text-blue-500 font-semibold">
-            수정
-          </button>
+          <button onClick={handleEdit} className="text-sm text-blue-500 font-semibold">수정</button>
         </div>
 
-        {/* 항목들 */}
-        <div
-          onClick={() => router.push('/profile/posts')}
-          className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
-        >
-          <p className="font-semibold text-sm">나의 글</p>
-          <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-        </div>
-        <div
-          onClick={() => router.push('/profile/comments')}
-          className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
-        >
-          <p className="font-semibold text-sm">나의 댓글</p>
-          <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-        </div>
-        <div
-          onClick={() => router.push('/profile/scraps')}
-          className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
-        >
-          <p className="font-semibold text-sm">스크랩한 글</p>
-          <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-        </div>
-        <div
-          onClick={() => router.push('/profile/likes')}
-          className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
-        >
-          <p className="font-semibold text-sm">좋아요한 글</p>
-          <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-        </div>
+        {/* 나의 글/댓글/스크랩/좋아요 */}
+        {[
+          ['나의 글', '/profile/posts'],
+          ['나의 댓글', '/profile/comments'],
+          ['스크랩한 글', '/profile/scraps'],
+          ['좋아요한 글', '/profile/likes'],
+        ].map(([label, path]) => (
+          <div
+            key={label}
+            onClick={() => router.push(path)}
+            className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer"
+          >
+            <p className="font-semibold text-sm">{label}</p>
+            <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+          </div>
+        ))}
 
         {/* 고객 지원 */}
-        <div className="bg-white p-4 rounded-2xl text-sm shadow-sm">
-          <p className="font-semibold mb-2">고객지원</p>
+        <div className="bg-white p-4 rounded-2xl shadow-sm">
+          <p className="font-semibold mb-2">고객 지원</p>
           <ul className="space-y-2 text-gray-600">
-            <li className="hover:underline cursor-pointer">약관 및 정책</li>
-            <li className="hover:underline cursor-pointer">커뮤니티 정책</li>
+            <li
+              onClick={() => router.push('/profile/community-policy')}
+              className="hover:underline cursor-pointer"
+            >
+              커뮤니티 정책
+            </li>
+            <li
+              onClick={() => router.push('/profile/youth-protection')}
+              className="hover:underline cursor-pointer"
+            >
+              청소년 보호 정책
+            </li>
+            <li
+              onClick={() => router.push('/profile/terms-of-service')}
+              className="hover:underline cursor-pointer"
+            >
+              서비스 이용약관
+            </li>
+            <li
+              onClick={() => router.push('/profile/faq')}
+              className="hover:underline cursor-pointer"
+            >
+              이용문의
+            </li>
           </ul>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="block w-full mt-6 py-3 text-center text-red-500 font-semibold border border-red-200 rounded-2xl bg-white hover:bg-red-50 transition"
+        >
+          로그아웃
+        </button>
       </div>
 
       {openSearch && <SearchModal onClose={() => setOpenSearch(false)} />}

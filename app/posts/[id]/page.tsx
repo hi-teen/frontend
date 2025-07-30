@@ -13,26 +13,18 @@ import {
   fetchBoardDetail,
   toggleLove,
   toggleScrap as toggleScrapApi,
+  BoardItem,
 } from '@/shared/api/board';
 import CommentSection from '@/features/comment/CommentSection';
-
-interface BoardDetail {
-  id: number;
-  title: string;
-  content: string;
-  loveCount: number;
-  scrapCount: number;
-  createdDate: string;
-}
 
 export default function PostDetailPage() {
   const router = useRouter();
   const { id } = useParams(); // /board/1 → id = '1'
 
-  const [detail, setDetail] = useState<BoardDetail | null>(null);
+  const [detail, setDetail] = useState<BoardItem | null>(null);
   const [liked, setLiked] = useState(false);
   const [scrapped, setScrapped] = useState(false);
-  const [commentCount, setCommentCount] = useState(0); // ✅ 댓글 수 상태 추가
+  const [commentCount, setCommentCount] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -89,7 +81,7 @@ export default function PostDetailPage() {
             <Image src="/profile.png" alt="user" width={14} height={14} />
           </div>
           <span className="font-semibold text-sm text-black">익명</span>
-          <span className="text-gray-400 text-xs">· {detail.createdDate}</span>
+          <span className="text-gray-400 text-xs">· {detail.createdAt}</span>
         </div>
         <h2 className="text-lg font-bold mb-3">{detail.title}</h2>
         <div className="text-sm text-gray-800 leading-relaxed mb-4">

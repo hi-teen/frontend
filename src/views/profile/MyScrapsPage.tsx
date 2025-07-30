@@ -23,7 +23,7 @@ export default function MyScrapsPage() {
         if (!res.ok) throw new Error('스크랩한 글 조회 실패');
         return res.json();
       })
-      .then((data) => setScraps(data))
+      .then((data) => setScraps(data.data))  // 여기만 고침!
       .catch((e) => {
         console.error(e);
         alert('스크랩한 글을 불러오는 데 실패했습니다.');
@@ -46,12 +46,12 @@ export default function MyScrapsPage() {
             key={post.id}
             id={post.id}
             title={post.title}
-            board={'게시판'} // 서버 응답에 board 없으면 임시 처리
+            board={post.categoryLabel || '게시판'}
             content={post.content}
             likes={post.loveCount}
             comments={0} // 댓글 수 없으면 임시 0 처리
-            views={0}     // 조회 수 없으면 임시 0 처리
-            date={new Date(post.createdDate).toLocaleDateString('ko-KR')}
+            views={post.viewCount ?? 0}
+            date={post.createdAt ? new Date(post.createdAt).toLocaleDateString('ko-KR') : ''}
           />
         ))}
       </div>

@@ -8,7 +8,6 @@ export const accessTokenAtom = atom<string | null>(null);
 export const authUserAtom = atom<{
   email: string;
   name: string;
-  nickname: string;
   schoolId: number;
   gradeNumber: number;
   classNumber: number;

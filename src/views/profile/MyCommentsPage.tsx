@@ -10,7 +10,7 @@ interface MyCommentItem {
   content: string;
   boardId: number;
   boardTitle: string;
-  createdDate: string;
+  createdAt: string;
 }
 
 export default function MyCommentsPage() {
@@ -46,7 +46,7 @@ export default function MyCommentsPage() {
               className="bg-white rounded-2xl px-4 py-3 shadow-sm"
             >
               <p className="text-xs text-gray-400 mb-1">
-                {comment.createdDate} · <span className="text-blue-500">{comment.boardTitle}</span>
+                {comment.createdAt} · <span className="text-blue-500">{comment.boardTitle}</span>
               </p>
               <p className="text-sm text-gray-800">{comment.content}</p>
               <div className="mt-2 text-right">

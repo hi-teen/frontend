@@ -4,12 +4,13 @@ export function getMySchoolInfo() {
     if (!profile) return null;
     try {
       const parsed = JSON.parse(profile);
+      const school = parsed.school || {};
       return {
-        eduOfficeCode: parsed.school.eduOfficeCode,
-        schoolCode: parsed.school.schoolCode,
-        gradeNumber: parsed.gradeNumber,
-        classNumber: parsed.classNumber,
-        schoolName: parsed.school.schoolName,
+        eduOfficeCode: school.eduOfficeCode ?? '', // 안전하게 접근
+        schoolCode: school.schoolCode ?? '',
+        gradeNumber: parsed.gradeNumber ?? '',
+        classNumber: parsed.classNumber ?? '',
+        schoolName: school.schoolName ?? '',
       };
     } catch {
       return null;

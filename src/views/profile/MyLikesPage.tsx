@@ -44,7 +44,7 @@ export default function MyLikesPage() {
               likes={post.loveCount}
               comments={0}
               views={0}
-              date={post.createdDate}
+              date={post.createdAt}
             />
           ))
         )}

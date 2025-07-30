@@ -1,39 +1,90 @@
 import axios from './axiosInstance';
 
+export interface SendAnonymousMessageParams {
+  boardId: number;
+  isBoardWriter: boolean;
+  anonymousNumber?: number | null;
+  content: string;
+}
+
+// 새 쪽지방 생성 + 첫 메시지 보내기
 export async function sendAnonymousMessage({
-    boardId,
-    commentId,
-    content,
-  }: {
+  boardId,
+  isBoardWriter,
+  anonymousNumber,
+  content,
+}: SendAnonymousMessageParams) {
+  const token = localStorage.getItem('accessToken');
+  if (!token) throw new Error('토큰 없음');
+
+  // 스웨거 스펙에 없는 anonymousNumber 는
+  // isBoardWriter === false 인 경우(댓글 주고받기)에만 포함
+  const payload: {
     boardId: number;
-    commentId?: number;
+    isBoardWriter: boolean;
     content: string;
-  }) {
-    const payload: any = { boardId, content };
-    if (commentId) payload.commentId = commentId;
-    const res = await fetch('/api/v1/messages/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    return (await res.json()).data;
+    anonymousNumber?: number | null;
+  } = { boardId, isBoardWriter, content };
+
+  if (!isBoardWriter) {
+    if (anonymousNumber == null) {
+      throw new Error('쪽지 받을 대상을 지정해 주세요.');
+    }
+    payload.anonymousNumber = anonymousNumber;
   }
 
-// 기존방 메시지 전송
-export async function sendMessageToRoom(
-  roomId: number,
-  senderId: number,
-  content: string
-) {
-  const res = await axios.post(`/api/v1/messages/room/${roomId}/send`, {
-    senderId,
-    content,
+  const res = await axios.post('/api/v1/messages/send', payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data.data; // { messageId, roomId, ... }
+}
+
+
+// 기존 쪽지방에 메시지 전송
+export async function sendMessageToRoom(roomId: number, content: string) {
+  const token = localStorage.getItem('accessToken');
+  if (!token) throw new Error('토큰 없음');
+
+  // content 역시 빈 문자열이 아닌 문자열이어야 합니다.
+  const payload = { content };
+  const res = await axios.post(
+    `/api/v1/messages/room/${roomId}/send`,
+    payload,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data.data;
+}
+
+// 채팅방 메시지 전체 조회
+export async function fetchMessages(roomId: number) {
+  const token = localStorage.getItem('accessToken');
+  if (!token) throw new Error('토큰 없음');
+
+  const res = await axios.get(`/api/v1/messages/room/${roomId}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
   return res.data.data;
 }
 
-// 채팅방 메시지 조회
-export async function fetchMessages(roomId: number) {
-  const res = await axios.get(`/api/v1/messages/room/${roomId}`);
+// 롱폴링 새 메시지 수신
+export async function pollMessages(roomId: number, lastMessageId: number) {
+  const token = localStorage.getItem('accessToken');
+  if (!token) throw new Error('토큰 없음');
+
+  const res = await axios.get(`/api/v1/messages/room/${roomId}/poll`, {
+    params: { lastMessageId },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data.data;
+}
+
+// 내 모든 쪽지방(목록) 조회
+export async function fetchMyRooms() {
+  const token = localStorage.getItem('accessToken');
+  if (!token) throw new Error('토큰 없음');
+
+  const res = await axios.get('/api/v1/messages/rooms', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   return res.data.data;
 }

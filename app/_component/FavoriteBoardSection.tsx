@@ -63,8 +63,8 @@ export default function FavoriteBoardSection({
               title={post.title}
               content={post.content}
               likes={post.loveCount}
-              comments={post.scrapCount}
-              views={0}
+              comments={post.commentCount}
+              views={post.viewCount}
               compact
             />
           ))}

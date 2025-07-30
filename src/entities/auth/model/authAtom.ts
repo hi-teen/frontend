@@ -6,7 +6,6 @@ export interface UserInfo {
   id: number;
   email: string;
   name: string;
-  nickname: string;
   schoolId: number;
   gradeNumber: number;
   classNumber: number;

@@ -37,16 +37,33 @@ export const fetchComments = async (boardId: number) => {
   
   export const postReply = async (commentId: number, content: string) => {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`https://hiteen.site/api/v1/comments/${commentId}/replies`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ content }),
-    });
+    const res = await fetch(
+      `https://hiteen.site/api/v1/comments/${commentId}/replies`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }),
+      }
+    );
     if (!res.ok) throw new Error('답글 작성 실패');
     const json = await res.json();
-    return json.data.replies.at(-1); // 마지막 대댓글 반환
+    return json.data;
   };
+  
+  export async function toggleCommentLike(commentId: number) {
+    const token = localStorage.getItem('accessToken');
+    if (!token) throw new Error('토큰 없음');
+    const res = await fetch(`https://hiteen.site/api/v1/comments/${commentId}/like`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) throw new Error('댓글 좋아요 실패');
+    const json = await res.json();
+    return json.data; // { likeCount: number, liked: boolean }
+  }
   
