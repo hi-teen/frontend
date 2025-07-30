@@ -17,16 +17,19 @@ export async function sendAnonymousMessage({
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('토큰 없음');
 
-  // payload 타입도 null 허용
+  // 스웨거 스펙에 없는 anonymousNumber 는
+  // isBoardWriter === false 인 경우(댓글 주고받기)에만 포함
   const payload: {
     boardId: number;
     isBoardWriter: boolean;
     content: string;
-   anonymousNumber?: number | null;
+    anonymousNumber?: number | null;
   } = { boardId, isBoardWriter, content };
 
-  // isBoardWriter가 false이고 anonymousNumber가 null이 아닐 때만 포함
-  if (!isBoardWriter && anonymousNumber != null) {
+  if (!isBoardWriter) {
+    if (anonymousNumber == null) {
+      throw new Error('쪽지 받을 대상을 지정해 주세요.');
+    }
     payload.anonymousNumber = anonymousNumber;
   }
 
@@ -36,11 +39,13 @@ export async function sendAnonymousMessage({
   return res.data.data; // { messageId, roomId, ... }
 }
 
+
 // 기존 쪽지방에 메시지 전송
 export async function sendMessageToRoom(roomId: number, content: string) {
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('토큰 없음');
 
+  // content 역시 빈 문자열이 아닌 문자열이어야 합니다.
   const payload = { content };
   const res = await axios.post(
     `/api/v1/messages/room/${roomId}/send`,
