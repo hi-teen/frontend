@@ -100,14 +100,14 @@ export default function PostDetailPage() {
           </div>
         </div>
 
-        <h2 className="text-lg font-bold mb-2">{detail.title}</h2>
-        <div className="text-sm text-gray-800 leading-relaxed mb-3">
+        <h2 className="m-2 mt-4 text-lg font-bold mb-2">{detail.title}</h2>
+        <div className="m-2 text-sm text-gray-800 leading-relaxed mb-3">
           {detail.content}
         </div>
 
-        <hr className="my-3 border-t border-gray-200" />
+        <hr className="mt-6 mb-2 border-t border-gray-200" />
 
-        <div className="flex justify-end items-center gap-5 text-gray-500 text-sm">
+        <div className="mb-2 flex justify-end items-center gap-5 text-gray-500 text-sm">
           <button className="flex items-center gap-1" onClick={() => {
             toggleLove(detail.id).then(() => setLiked(!liked));
             setDetail(prev => prev && ({ ...prev, loveCount: prev.loveCount + (liked ? -1 : 1) }));

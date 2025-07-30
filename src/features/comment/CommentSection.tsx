@@ -205,7 +205,7 @@ export default function CommentSection({
 
   return (
     <section className="bg-white">
-      <div className="space-y-6">
+      <div className="space-y-4">
         {comments.map((c) => {
           const avatar = emojis[c.commentId % emojis.length];
           return (
@@ -213,7 +213,7 @@ export default function CommentSection({
               key={c.commentId}
               className="px-4 border-t border-gray-200 pt-4 relative"
             >
-              <div className="absolute top-2 right-4 flex items-center gap-2 text-gray-400">
+              <div className="absolute top-4 right-4 flex items-center gap-2 text-gray-400">
                 <button onClick={() => handleToggleCommentLike(c.commentId)}>
                   <HeartIcon
                     className={`w-3.5 h-3.5 ${
