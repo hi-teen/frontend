@@ -12,7 +12,7 @@ module.exports = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://hiteen.site/api/:path*',
+        destination: '/api/:path*',
       },
     ];
   },

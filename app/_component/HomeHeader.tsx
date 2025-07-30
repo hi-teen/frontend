@@ -17,7 +17,7 @@ async function fetchSchoolName(): Promise<string> {
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
   if (!token) return "";
   try {
-    const res = await fetch("https://hiteen.site/api/v1/members/me", {
+    const res = await fetch("/api/v1/members/me", {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json"

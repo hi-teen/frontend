@@ -15,7 +15,7 @@ interface MeData {
 const fetchMe = async (): Promise<MeData> => {
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('토큰 없음');
-  const res = await fetch('https://hiteen.site/api/v1/members/me', {
+  const res = await fetch('/api/v1/members/me', {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error('내 정보 조회 실패');
@@ -34,7 +34,7 @@ const updateProfile = async (body: {
 }) => {
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('토큰 없음');
-  const res = await fetch('https://hiteen.site/api/v1/members/me', {
+  const res = await fetch('/api/v1/members/me', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

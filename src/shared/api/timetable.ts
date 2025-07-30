@@ -33,7 +33,7 @@ export function getMySchoolInfo() {
     if (!token) throw new Error('토큰 없음');
   
     const res = await fetch(
-      `https://hiteen.site/api/v1/timetable?officeCode=${eduOfficeCode}&schoolCode=${schoolCode}&grade=${gradeNumber}&classNum=${classNumber}`,
+      `/api/v1/timetable?officeCode=${eduOfficeCode}&schoolCode=${schoolCode}&grade=${gradeNumber}&classNum=${classNumber}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }

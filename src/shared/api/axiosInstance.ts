@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://hiteen.site',
+  baseURL: '',
 });
 
 axiosInstance.interceptors.request.use(

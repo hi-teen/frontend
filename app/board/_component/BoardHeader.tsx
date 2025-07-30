@@ -50,7 +50,7 @@ export default function BoardHeader({
         return;
       }
       try {
-        const res = await fetch('https://hiteen.site/api/v1/members/me', {
+        const res = await fetch('/api/v1/members/me', {
           headers: { Authorization: `Bearer ${token}` },
         });
         const json = await res.json();

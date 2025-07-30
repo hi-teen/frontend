@@ -35,7 +35,7 @@ export default function PostWritePage() {
     }
 
     try {
-      const res = await fetch('https://hiteen.site/api/v1/boards', {
+      const res = await fetch('/api/v1/boards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,6 @@
 export const fetchComments = async (boardId: number) => {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`https://hiteen.site/api/v1/comments/board/${boardId}`, {
+    const res = await fetch(`/api/v1/comments/board/${boardId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -22,7 +22,7 @@ export const fetchComments = async (boardId: number) => {
   
   export const postComment = async (boardId: number, content: string) => {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`https://hiteen.site/api/v1/comments`, {
+    const res = await fetch(`/api/v1/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ export const fetchComments = async (boardId: number) => {
   export const postReply = async (commentId: number, content: string) => {
     const token = localStorage.getItem('accessToken');
     const res = await fetch(
-      `https://hiteen.site/api/v1/comments/${commentId}/replies`,
+      `/api/v1/comments/${commentId}/replies`,
       {
         method: 'POST',
         headers: {
@@ -56,7 +56,7 @@ export const fetchComments = async (boardId: number) => {
   export async function toggleCommentLike(commentId: number) {
     const token = localStorage.getItem('accessToken');
     if (!token) throw new Error('토큰 없음');
-    const res = await fetch(`https://hiteen.site/api/v1/comments/${commentId}/like`, {
+    const res = await fetch(`/api/v1/comments/${commentId}/like`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,

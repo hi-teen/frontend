@@ -24,7 +24,7 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     const token = localStorage.getItem('accessToken');
     if (!token) return router.replace('/login');
-    await fetch('https://hiteen.site/api/v1/auth/logout', {
+    await fetch('/api/v1/auth/logout', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, Accept: '*/*' },
     });
@@ -38,7 +38,7 @@ export default function ProfilePage() {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    fetch('https://hiteen.site/api/v1/loves/me', {
+    fetch('/api/v1/loves/me', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => (r.ok ? r.json() : []))
