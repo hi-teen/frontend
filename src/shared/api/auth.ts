@@ -48,7 +48,7 @@ async function safeParseResponse(res: Response) {
 
 // 회원가입 API
 export async function signUpApi(form: SignupFormData): Promise<UserInfo> {
-  const res = await fetch('https://hiteen.site/api/v1/members/sign-up', {
+  const res = await fetch('/api/v1/members/sign-up', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify(form),
@@ -85,7 +85,7 @@ export const loginApi = async (
   email: string,
   password: string
 ): Promise<{ accessToken: string; refreshToken: string }> => {
-  const res = await fetch('https://hiteen.site/api/v1/auth/login', {
+  const res = await fetch('/api/v1/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -123,7 +123,7 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
     throw new Error('리프레시 토큰 없음');
   }
 
-  const res = await fetch('https://hiteen.site/api/v1/auth/reissue', {
+  const res = await fetch('/api/v1/auth/reissue', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify({ refreshToken }),
@@ -162,7 +162,7 @@ export const fetchMe = async (): Promise<UserInfo> => {
     throw new Error('토큰 없음');
   }
 
-  let res = await fetch('https://hiteen.site/api/v1/members/me', {
+  let res = await fetch('/api/v1/members/me', {
     headers: {
       Authorization: `Bearer ${token}`,
       'Accept': 'application/json',
@@ -173,7 +173,7 @@ export const fetchMe = async (): Promise<UserInfo> => {
     // 토큰 재발급 시도 → 실패시 handleTokenExpired가 처리
     const { accessToken } = await reissueToken();
     token = accessToken;
-    res = await fetch('https://hiteen.site/api/v1/members/me', {
+    res = await fetch('/api/v1/members/me', {
       headers: {
         Authorization: `Bearer ${token}`,
         'Accept': 'application/json',

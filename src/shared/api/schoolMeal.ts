@@ -22,7 +22,7 @@ export function getSchoolInfoFromProfile() {
     year: number;
     month: number;
   }) {
-    const url = `https://hiteen.site/api/v1/school-meal?officeCode=${eduOfficeCode}&schoolCode=${schoolCode}&year=${year}&month=${month}`;
+    const url = `/api/v1/school-meal?officeCode=${eduOfficeCode}&schoolCode=${schoolCode}&year=${year}&month=${month}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error('급식 데이터 조회 실패');
     const json = await res.json();

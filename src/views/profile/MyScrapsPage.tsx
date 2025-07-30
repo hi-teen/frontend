@@ -14,7 +14,7 @@ export default function MyScrapsPage() {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    fetch('https://hiteen.site/api/v1/scraps/me', {
+    fetch('/api/v1/scraps/me', {
       headers: {
         Authorization: `Bearer ${token}`,
       },

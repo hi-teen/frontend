@@ -16,7 +16,7 @@ export interface BoardItem {
 
 // 전체 게시글 목록 조회
 export const fetchBoards = async (): Promise<BoardItem[]> => {
-  const res = await fetchWithAuth('https://hiteen.site/api/v1/boards');
+  const res = await fetchWithAuth('/api/v1/boards');
   if (!res.ok) throw new Error('게시글 불러오기 실패');
   const json = await res.json();
   if (!json.data || !Array.isArray(json.data)) {
@@ -27,7 +27,7 @@ export const fetchBoards = async (): Promise<BoardItem[]> => {
 
 // 게시글 상세 조회
 export const fetchBoardDetail = async (boardId: number): Promise<BoardItem> => {
-  const res = await fetchWithAuth(`https://hiteen.site/api/v1/boards/${boardId}`);
+  const res = await fetchWithAuth(`/api/v1/boards/${boardId}`);
   if (!res.ok) throw new Error('상세 게시글 조회 실패');
   const json = await res.json();
   if (!json.data) throw new Error('상세 게시글 데이터가 없음');
@@ -35,7 +35,7 @@ export const fetchBoardDetail = async (boardId: number): Promise<BoardItem> => {
 };
 
 export const toggleLove = async (boardId: number) => {
-  const res = await fetchWithAuth(`https://hiteen.site/api/v1/loves?boardId=${boardId}`, {
+  const res = await fetchWithAuth(`/api/v1/loves?boardId=${boardId}`, {
     method: 'POST',
   });
   if (!res.ok) {
@@ -45,14 +45,14 @@ export const toggleLove = async (boardId: number) => {
 };
 
 export const toggleScrap = async (boardId: number) => {
-  const res = await fetchWithAuth(`https://hiteen.site/api/v1/scraps?boardId=${boardId}`, {
+  const res = await fetchWithAuth(`/api/v1/scraps?boardId=${boardId}`, {
     method: 'POST',
   });
   if (!res.ok) throw new Error('스크랩 실패');
 };
 
 export const fetchMyPosts = async (): Promise<BoardItem[]> => {
-  const res = await fetchWithAuth(`https://hiteen.site/api/v1/boards/me`);
+  const res = await fetchWithAuth(`/api/v1/boards/me`);
   if (!res.ok) {
     throw new Error('내 글 목록 불러오기 실패');
   }
@@ -66,7 +66,7 @@ export const fetchMyPosts = async (): Promise<BoardItem[]> => {
 // 인기 게시글 조회 (최대 3개)
 export async function fetchPopularBoards(): Promise<any[]> {
   const token = localStorage.getItem('accessToken');
-  const res = await fetch('https://hiteen.site/api/v1/boards/popular', {
+  const res = await fetch('/api/v1/boards/popular', {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   const json = await res.json();
@@ -77,7 +77,7 @@ export async function fetchPopularBoards(): Promise<any[]> {
 export async function fetchMyRooms() {
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('로그인 필요');
-  const res = await fetch('https://hiteen.site/api/v1/messages/rooms', {
+  const res = await fetch('/api/v1/messages/rooms', {
     headers: {
       Authorization: `Bearer ${token}`,
     },

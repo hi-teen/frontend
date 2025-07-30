@@ -57,7 +57,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
     timer.current = setTimeout(() => {
       const token = localStorage.getItem('accessToken');
       fetch(
-        `https://hiteen.site/api/v1/boards/search?keyword=${encodeURIComponent(keyword)}`,
+        `/api/v1/boards/search?keyword=${encodeURIComponent(keyword)}`,
         {
           headers: token
             ? { Authorization: `Bearer ${token}` }
