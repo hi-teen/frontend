@@ -14,12 +14,20 @@ export default function SignupStartPage() {
         </p>
       </div>
 
-      <button
-        onClick={() => router.push('/signup/step/name')}
-        className="w-full bg-custom-blue text-white text-base font-semibold py-4 rounded-xl"
-      >
-        회원가입 하기
-      </button>
+      <div className="space-y-3">
+        <button
+          onClick={() => router.push('/signup/step/name')}
+          className="w-full bg-custom-blue text-white text-base font-semibold py-4 rounded-xl"
+        >
+          회원가입 하기
+        </button>
+        <button
+          onClick={() => router.push('/login')}
+          className="w-full bg-blue-400 text-white text-base font-semibold py-4 rounded-xl"
+        >
+          로그인 하기
+        </button>
+      </div>
     </div>
   );
 }
