@@ -3,16 +3,18 @@ import { NextRequest, NextResponse } from 'next/server'
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
+  // Next.js internals and static assets
   if (
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
     pathname === '/favicon.ico'
   ) {
     return NextResponse.next()
   }
 
+  // Bypass auth for API routes and auth pages
   if (
+    pathname.startsWith('/api') ||
     pathname === '/signup' ||
     pathname.startsWith('/signup/') ||
     pathname === '/login'
@@ -20,10 +22,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // 그 외 경로에 대해 토큰 검사
+  // Protect other routes: check token in cookies
   const token = req.cookies.get('token')?.value
   if (!token) {
-    // 토큰 없으면 /signup 으로
     const url = req.nextUrl.clone()
     url.pathname = '/signup'
     return NextResponse.redirect(url)
