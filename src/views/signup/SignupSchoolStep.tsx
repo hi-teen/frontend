@@ -37,7 +37,7 @@ export default function SignupSchoolStep() {
 
     setLoading(true);
     try {
-      const res = await fetch(`/schools/search?keyword=${encodeURIComponent(value)}`);
+      const res = await fetch(`/api/schools/search?keyword=${encodeURIComponent(value)}`);
       if (!res.ok) throw new Error('학교 검색 실패');
       const schools = await res.json();
       setResults(schools);
