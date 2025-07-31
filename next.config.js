@@ -1,4 +1,3 @@
-// next.config.js
 module.exports = {
   async redirects() {
     return [
@@ -14,6 +13,10 @@ module.exports = {
       {
         source: '/api/:path*',
         destination: 'https://hiteen.site/api/:path*',
+      },
+      {
+        source: '/schools/:path*',
+        destination: 'https://hiteen.site/schools/:path*',
       },
     ];
   },
