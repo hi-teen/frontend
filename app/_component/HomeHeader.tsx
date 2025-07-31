@@ -46,7 +46,7 @@ export default function HomeHeader() {
       <header className='px-4 pt-5 flex justify-between items-start bg-gray-50 sticky top-0 z-50'>
         <div className='flex flex-col'>
           <Link href='/'>
-            <Image src='/hiteen.svg' alt='HiTeen 로고' width={72} height={24} priority />
+            <Image src='/hiteen.png' alt='HiTeen 로고' width={72} height={24} priority />
           </Link>
           <span className='text-xl font-bold mt-1'>{schoolName || '학교명 없음'}</span>
         </div>

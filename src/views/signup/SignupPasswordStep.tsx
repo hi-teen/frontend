@@ -20,7 +20,8 @@ export default function SignupPasswordStep() {
     if (form.passwordConfirm) setConfirm(form.passwordConfirm);
   }, [form]);
 
-  const isValid = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{7,}$/.test(password); // 영어+숫자 7자 이상
+  // 특수문자도 허용하는 비밀번호 유효성 검사 (영어+숫자+특수문자 7자 이상)
+  const isValid = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{7,}$/.test(password);
   const isMatched = password === confirm;
   const canProceed = isValid && isMatched;
 
@@ -63,7 +64,7 @@ export default function SignupPasswordStep() {
             )}
           </button>
         </div>
-        <p className="text-sm text-gray-500 mb-6">영어, 숫자 포함하여 7자리 이상 입력해주세요.</p>
+        <p className="text-sm text-gray-500 mb-6">영어, 숫자 포함하여 7자리 이상 입력해주세요. (특수문자 사용 가능)</p>
 
         {/* 비밀번호 확인 */}
         <label className="text-sm text-[#2269FF] font-medium">비밀번호 확인</label>
