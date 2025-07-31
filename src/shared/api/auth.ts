@@ -112,8 +112,13 @@ export const loginApi = async (
   localStorage.setItem('accessToken', data.data.accessToken);
   localStorage.setItem('refreshToken', data.data.refreshToken);
 
+  if (typeof window !== 'undefined') {
+    document.cookie = `token=${data.data.accessToken}; path=/;`;
+  }
+
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
+
 
 // 토큰 재발급 API (★로그아웃 및 안내 추가)
 export const reissueToken = async (): Promise<{ accessToken: string; refreshToken: string }> => {
