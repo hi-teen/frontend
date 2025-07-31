@@ -207,7 +207,7 @@ export default function CommentSection({
     <section className="bg-white">
       <div className="space-y-4">
         {comments.map((c) => {
-          const avatar = emojis[c.commentId % emojis.length];
+          const avatar = c.idBoardWriter ? emojis[0] : emojis[c.commentId % emojis.length];
           return (
             <div
               key={c.commentId}
@@ -276,7 +276,7 @@ export default function CommentSection({
                     <div className="mt-3 space-y-2">
                       {c.replies.map((r) => {
                         const replyAvatar =
-                          emojis[r.replyId % emojis.length];
+                          r.idBoardWriter ? emojis[0] : emojis[r.replyId % emojis.length];
                         return (
                           <div
                             key={r.replyId}

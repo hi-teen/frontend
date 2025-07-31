@@ -22,26 +22,24 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className='fixed bottom-0 left-0 right-0 bg-white border-t rounded-t-[30px]'>
-      <div className='container mx-auto px-4'>
-        <div className='flex justify-around items-center h-16 m-2 mb-4'>
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex flex-col items-center gap-1 ${
-                  isActive ? "text-blue-500" : "text-gray-500"
-                }`}
-              >
-                <item.icon className='w-7 h-7' />
-                <span className='text-xs'>{item.name}</span>
-              </Link>
-            );
-          })}
-        </div>
+    <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 bg-white border-t rounded-t-[30px] max-w-lg w-full">
+      <div className="flex justify-around items-center h-16 m-2 mb-4">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`flex flex-col items-center gap-1 ${
+                isActive ? "text-blue-500" : "text-gray-500"
+              }`}
+            >
+              <item.icon className="w-7 h-7" />
+              <span className="text-xs">{item.name}</span>
+            </Link>
+          );
+        })}
       </div>
-    </nav>
+    </div>
   );
 }

@@ -69,7 +69,7 @@ export default function PostDetailPage() {
   if (!detail) return <div className="p-4 text-center">로딩 중…</div>;
 
   const name = getProfileName(detail.writer);
-  const emoji = emojis[detail.id % emojis.length];
+  const emoji = emojis[0];
 
   return (
     <div className="max-w-lg mx-auto min-h-screen bg-white pb-[80px]">
