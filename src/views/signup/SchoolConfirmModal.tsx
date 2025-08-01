@@ -1,7 +1,5 @@
 'use client';
 
-import Image from 'next/image';
-
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -19,7 +17,7 @@ export default function SchoolConfirmModal({ isOpen, onClose, onConfirm, schoolN
         <p className="text-sm text-red-500 mb-4">가입 이후에는 학교를 변경할 수 없어요</p>
 
         <div className="flex items-center gap-3 mb-6">
-          <Image src="/school.png" alt="학교" width={28} height={28} />
+          <img src="/school.png" alt="학교" width={28} height={28} />
           <div>
             <p className="text-xs text-gray-500">
               {schoolName ? '' : '학교를 선택해주세요.'}

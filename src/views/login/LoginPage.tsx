@@ -45,6 +45,16 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col justify-between min-h-[100dvh] max-w-lg mx-auto px-6 pt-28 pb-10 bg-white">
+      {/* 회원가입 링크 */}
+      <div className="absolute top-8 right-6">
+        <button
+          onClick={() => router.push('/signup/step/name')}
+          className="text-[#2269FF] text-sm font-medium hover:underline"
+        >
+          회원가입
+        </button>
+      </div>
+
       <div>
         <h1 className="text-xl font-bold mb-6">로그인</h1>
 

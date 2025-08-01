@@ -62,7 +62,7 @@ export default function ProfilePage() {
     <>
       <header className="px-4 pt-5 flex justify-between items-start bg-gray-50 sticky top-0 z-50">
         <div className="flex flex-col">
-          <Link href="/"><Image src="/hiteen.png" alt="로고" width={72} height={24} priority/></Link>
+          <Link href="/"><Image src="/HiTeen.png" alt="로고" width={72} height={24} priority/></Link>
           {user && <span className="text-xl font-bold mt-1">{user.schoolName}</span>}
         </div>
       </header>

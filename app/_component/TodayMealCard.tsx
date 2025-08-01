@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import Image from 'next/image';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface Meal {
   date: string;
@@ -82,6 +83,18 @@ export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMea
     setModalOpen(true);
   };
 
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIndex < totalDays - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
   if (!currentMeal) {
     return (
       <div className="mt-4 px-4 text-sm text-gray-500">
@@ -100,6 +113,31 @@ export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMea
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
+          {/* 네비게이션 버튼들 */}
+          <div className="absolute top-1/2 left-1 transform -translate-y-1/2 z-10">
+            {currentIndex > 0 && (
+              <button
+                onClick={handlePrev}
+                className="w-6 h-5 bg-white/90 hover:bg-white rounded-full shadow-sm flex items-center justify-center transition-all duration-200 hover:scale-110 opacity-70 hover:opacity-100"
+                aria-label="이전 급식"
+              >
+                <ChevronLeftIcon className="w-3 h-3 text-gray-500" />
+              </button>
+            )}
+          </div>
+          
+          <div className="absolute top-1/2 right-1 transform -translate-y-1/2 z-10">
+            {currentIndex < totalDays - 1 && (
+              <button
+                onClick={handleNext}
+                className="w-6 h-5 bg-white/90 hover:bg-white rounded-full shadow-sm flex items-center justify-center transition-all duration-200 hover:scale-110 opacity-70 hover:opacity-100"
+                aria-label="다음 급식"
+              >
+                <ChevronRightIcon className="w-3 h-3 text-gray-500" />
+              </button>
+            )}
+          </div>
+
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-2">
               <Image src="/lunchbox.png" alt="급식 아이콘" width={40} height={40} />
@@ -111,7 +149,7 @@ export default function TodayMealCard({ monthMeals, initialIndex = 0 }: TodayMea
           </div>
 
           {/* 급식 정보 */}
-          <div className="space-y-3 pl-4">
+          <div className="space-y-3 px-3">
             <div>
               <span className="text-xs font-semibold text-[#2E71FF] border border-[#2E71FF] bg-white px-3 py-1 rounded-md inline-block mb-1">
                 중식
