@@ -105,7 +105,7 @@ export default function BoardHeader({
         <div className='flex justify-between items-start'>
           <div className='flex flex-col'>
             <Link href='/'>
-              <Image src='/hiteen.png' alt='HiTeen 로고' width={72} height={24} priority />
+              <Image src='/HiTeen.png' alt='HiTeen 로고' width={72} height={24} priority />
             </Link>
             <span className='text-xl font-bold mt-1'>{schoolName || '학교명 없음'}</span>
           </div>

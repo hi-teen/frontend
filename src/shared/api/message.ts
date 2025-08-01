@@ -17,28 +17,36 @@ export async function sendAnonymousMessage({
   const token = localStorage.getItem('accessToken');
   if (!token) throw new Error('토큰 없음');
 
-  // 스웨거 스펙에 없는 anonymousNumber 는
-  // isBoardWriter === false 인 경우(댓글 주고받기)에만 포함
-  const payload: {
-    boardId: number;
-    isBoardWriter: boolean;
-    content: string;
-    anonymousNumber?: number | null;
-  } = { boardId, isBoardWriter, content };
+  // 백엔드 API 스웨거에 맞게 요청 데이터 구성
+  const payload: any = {
+    boardId,
+    isBoardWriter,
+    content,
+  };
 
-  if (!isBoardWriter) {
-    if (anonymousNumber == null) {
-      throw new Error('쪽지 받을 대상을 지정해 주세요.');
-    }
+  // isBoardWriter가 false일 때만 anonymousNumber 포함
+  if (!isBoardWriter && anonymousNumber != null) {
     payload.anonymousNumber = anonymousNumber;
   }
 
-  const res = await axios.post('/api/v1/messages/send', payload, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data.data; // { messageId, roomId, ... }
-}
+  console.log('sendAnonymousMessage 요청 데이터:', payload);
 
+  try {
+    const res = await axios.post('/api/v1/messages/send', payload, {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+    });
+    console.log('sendAnonymousMessage 응답:', res.data);
+    return res.data.data; // { messageId, roomId, ... }
+  } catch (error: any) {
+    console.error('sendAnonymousMessage 에러:', error);
+    console.error('에러 응답:', error.response?.data);
+    console.error('에러 헤더:', error.response?.headers);
+    throw new Error(error.response?.data?.header?.message || error.response?.data?.message || '채팅방 생성에 실패했습니다.');
+  }
+}
 
 // 기존 쪽지방에 메시지 전송
 export async function sendMessageToRoom(roomId: number, content: string) {

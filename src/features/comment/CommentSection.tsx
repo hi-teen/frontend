@@ -189,14 +189,8 @@ export default function CommentSection({
     anonymousNumber: number
   ) => {
     try {
-      const room = await sendAnonymousMessage({
-        boardId,
-        isBoardWriter: false,
-        anonymousNumber,
-        content: ' ',
-      });
-      if (!room?.roomId) throw new Error('roomId 없음');
-      router.push(`/messages/${room.roomId}`);
+      // 채팅방 생성하지 않고 ChatDetail 페이지로 이동
+      router.push(`/messages/new?boardId=${boardId}&isBoardWriter=false&anonymousNumber=${anonymousNumber}`);
     } catch (e) {
       console.error('쪽지 전송 실패', e);
       alert('쪽지를 보내는 데 실패했습니다.');

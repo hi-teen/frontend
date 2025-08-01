@@ -10,6 +10,7 @@ import {
   pollMessages,
   fetchMyRooms,
 } from '@/shared/api/message';
+import { fetchBoardDetail } from '@/shared/api/board';
 
 interface ChatMessage {
   messageId: number;
@@ -33,7 +34,7 @@ export default function ChatDetailPage() {
 
   // 신규 대화 여부 판단
   const boardIdParam = search.get('boardId');
-  const isNew = boardIdParam !== null;
+  const isNew = boardIdParam !== null || id === 'new';
   const boardId = isNew ? Number(boardIdParam) : undefined;
   const isBoardWriter = isNew ? search.get('isBoardWriter') === 'true' : undefined;
   const anonymousNumber =
@@ -46,7 +47,7 @@ export default function ChatDetailPage() {
     isNew ? null : Number(id)
   );
 
-  // 원 게시물 메타
+  // 원 게시물 메타 (신규 채팅 시에도 표시)
   const [boardInfo, setBoardInfo] = useState<{
     boardId: number;
     boardTitle: string;
@@ -61,33 +62,60 @@ export default function ChatDetailPage() {
   const endRef = useRef<HTMLDivElement>(null);
   const lastIdRef = useRef<number>(0);
 
-  // — 원 게시물 메타 로드
-useEffect(() => {
-  if (roomId == null) return;
-  fetchMyRooms()
-    .then((rooms: {
-      roomId: number;
-      boardId: number;
-      boardTitle: string;
-      categoryLabel?: string;
-    }[]) => {
-      const rm = rooms.find((r) => r.roomId === roomId);
-      if (rm) {
-        setBoardInfo({
-          boardId: rm.boardId,
-          boardTitle: rm.boardTitle,
-          categoryLabel: rm.categoryLabel ?? '',
+  // — 신규 채팅 시 게시글 정보 로드
+  useEffect(() => {
+    if (isNew && boardId) {
+      // 실제 게시글 정보를 API에서 가져오기
+      fetchBoardDetail(boardId)
+        .then(board => {
+          setBoardInfo({
+            boardId: board.id,
+            boardTitle: board.title,
+            categoryLabel: board.categoryLabel,
+          });
+        })
+        .catch(() => {
+          // API 실패 시 기본 정보로 설정
+          setBoardInfo({
+            boardId: boardId,
+            boardTitle: '게시글',
+            categoryLabel: '게시판',
+          });
+        })
+        .finally(() => {
+          setLoading(false);
         });
-      }
-    })
-    .catch(() => {});
-}, [roomId]);
+    }
+  }, [isNew, boardId]);
 
+  // — 원 게시물 메타 로드 (기존 방)
+  useEffect(() => {
+    if (roomId == null || isNew) return;
+    fetchMyRooms()
+      .then((rooms: {
+        roomId: number;
+        boardId: number;
+        boardTitle: string;
+        categoryLabel?: string;
+      }[]) => {
+        const rm = rooms.find((r) => r.roomId === roomId);
+        if (rm) {
+          setBoardInfo({
+            boardId: rm.boardId,
+            boardTitle: rm.boardTitle,
+            categoryLabel: rm.categoryLabel ?? '',
+          });
+        }
+      })
+      .catch(() => {});
+  }, [roomId, isNew]);
 
   // — 기존 방 메시지 최초 로드
   useEffect(() => {
     if (roomId == null) {
-      setLoading(false);
+      if (!isNew) {
+        setLoading(false);
+      }
       return;
     }
     fetchMessages(roomId)
@@ -99,7 +127,7 @@ useEffect(() => {
       })
       .catch(() => setMessages([]))
       .finally(() => setLoading(false));
-  }, [roomId]);
+  }, [roomId, isNew]);
 
   // — 롱폴링 (messages deps 제거)
   useEffect(() => {
@@ -146,23 +174,31 @@ useEffect(() => {
     const txt = input.trim();
     if (!txt) return;
 
-    if (roomId == null && isNew) {
-      const result = await sendAnonymousMessage({
-        boardId: boardId!,
-        isBoardWriter: isBoardWriter!,
-        content: txt,
-        ...(isBoardWriter! ? {} : { anonymousNumber: anonymousNumber! }),
-      });
-      setRoomId(result.roomId);
-      router.replace(`/messages/${result.roomId}`);
-      setMessages([result]);
-      lastIdRef.current = result.messageId;
-    } else if (roomId != null) {
-      await sendMessageToRoom(roomId, txt);
-    }
+    try {
+      if (roomId == null && isNew) {
+        // 신규 채팅: 첫 메시지 입력 시 방 생성 + 메시지 전송
+        console.log('신규 채팅 시작:', { boardId, isBoardWriter, anonymousNumber, content: txt });
+        const result = await sendAnonymousMessage({
+          boardId: boardId!,
+          isBoardWriter: isBoardWriter!,
+          content: txt,
+          ...(isBoardWriter! ? {} : { anonymousNumber: anonymousNumber! }),
+        });
+        setRoomId(result.roomId);
+        router.replace(`/messages/${result.roomId}`);
+        setMessages([result]);
+        lastIdRef.current = result.messageId;
+      } else if (roomId != null) {
+        // 기존 방: 메시지만 전송
+        await sendMessageToRoom(roomId, txt);
+      }
 
-    setInput('');
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setInput('');
+      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+      console.error('메시지 전송 실패:', error);
+      alert(error instanceof Error ? error.message : '메시지 전송에 실패했습니다.');
+    }
   };
 
   const emoji = roomId != null ? getEmojiFor(roomId) : '💬';

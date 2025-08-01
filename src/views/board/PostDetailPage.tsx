@@ -54,15 +54,10 @@ export default function PostDetailPage() {
   const handleSendMessage = async () => {
     if (!detail) return;
     try {
-      // create new chat room + first blank message
-      const { roomId } = await sendAnonymousMessage({
-        boardId: detail.id,
-        isBoardWriter: true,
-        content: ' ',
-      });
-      router.push(`/messages/${roomId}`);
+      // 채팅방 생성하지 않고 ChatDetail 페이지로 이동
+      router.push(`/messages/new?boardId=${detail.id}&isBoardWriter=true`);
     } catch {
-      alert('쪽지방 생성 실패');
+      alert('채팅방 생성 실패');
     }
   };
 

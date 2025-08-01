@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
 import { useAtom } from 'jotai';
 import { signupFormAtom } from '@/shared/stores/signup';
 import SchoolConfirmModal from './SchoolConfirmModal';
@@ -42,7 +41,8 @@ export default function SignupSchoolStep() {
       const schools = await res.json();
       setResults(schools);
       setShowDropdown(schools.length > 0);
-    } catch {
+    } catch (error) {
+      console.error('학교 검색 오류:', error);
       setResults([]);
       setShowDropdown(false);
     } finally {
@@ -96,7 +96,7 @@ export default function SignupSchoolStep() {
                 onClick={() => handleSchoolClick(school)}
                 className="flex items-center gap-2 cursor-pointer px-4 py-2 hover:bg-gray-100"
               >
-                <Image src="/school.png" alt="학교" width={24} height={24} />
+                <img src="/school.png" alt="학교" width={24} height={24} />
                 <p className="text-sm font-semibold">{school.schoolName}</p>
               </div>
             ))}
