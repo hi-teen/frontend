@@ -43,7 +43,7 @@ export default function HomeHeader() {
 
   return (
     <>
-      <header className='px-4 pt-5 flex justify-between items-start bg-gray-50 sticky top-0 z-50'>
+      <header className='px-4 pt-5 pb-2 flex justify-between items-start bg-gray-50 sticky top-0 z-50'>
         <div className='flex flex-col'>
           <Link href='/'>
             <Image src='/HiTeen.png' alt='HiTeen 로고' width={72} height={24} priority />

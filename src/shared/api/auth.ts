@@ -33,15 +33,12 @@ export interface UserInfo {
 
 // 안전하게 JSON 파싱
 async function safeParseResponse(res: Response) {
-  const contentType = res.headers.get("content-type");
-  const text = await res.text();
-  let data: any = null;
-  if (contentType && contentType.includes("application/json")) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = null;
-    }
+  let data;
+  let text;
+  try {
+    data = await res.json();
+  } catch {
+    text = await res.text();
   }
   return { data, text };
 }
