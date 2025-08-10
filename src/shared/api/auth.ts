@@ -43,6 +43,32 @@ async function safeParseResponse(res: Response) {
   return { data, text };
 }
 
+// 이메일 중복 확인 API
+export async function checkEmailAvailability(email: string): Promise<boolean> {
+  const res = await fetch(`/api/v1/members/email/availability?email=${encodeURIComponent(email)}`, {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+  });
+
+  const { data, text } = await safeParseResponse(res);
+
+  // 409 Conflict는 중복된 이메일을 의미
+  if (res.status === 409) {
+    return false; // 중복됨
+  }
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.header?.message || data.message)) ||
+      text ||
+      '이메일 중복 확인 실패';
+    throw new Error(msg);
+  }
+
+  // success가 true면 사용 가능, false면 중복
+  return data?.success || false;
+}
+
 // 회원가입 API
 export async function signUpApi(form: SignupFormData): Promise<UserInfo> {
   const res = await fetch('/api/v1/members/sign-up', {

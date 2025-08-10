@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAtom } from 'jotai';
 import { signupFormAtom } from '@/shared/stores/signup';
+import { checkEmailAvailability } from '@/shared/api/auth';
 
 export default function SignupEmailStep() {
   const router = useRouter();
@@ -26,8 +27,21 @@ export default function SignupEmailStep() {
     setIsValid(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!isValid) return;
+    
+    try {
+      const available = await checkEmailAvailability(email);
+      
+      if (!available) {
+        alert('이미 사용 중인 이메일입니다. 다른 이메일을 입력해주세요.');
+        return;
+      }
+    } catch (error) {
+      console.error('이메일 중복 확인 실패:', error);
+      alert('이메일 중복 확인에 실패했습니다. 다시 시도해주세요.');
+      return;
+    }
 
     setForm((prev) => ({
       ...prev,
