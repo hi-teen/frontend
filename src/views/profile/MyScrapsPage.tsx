@@ -49,7 +49,7 @@ export default function MyScrapsPage() {
             board={post.categoryLabel || '게시판'}
             content={post.content}
             likes={post.loveCount}
-            comments={0} // 댓글 수 없으면 임시 0 처리
+            comments={post.commentCount || 0}
             views={post.viewCount ?? 0}
             date={post.createdAt ? new Date(post.createdAt).toLocaleDateString('ko-KR') : ''}
           />

@@ -27,7 +27,7 @@ function mapApiToPost(item: any): Post {
     board: item.categoryLabel,
     content: item.content,
     likes: item.loveCount,
-    comments: 0, // 댓글 수는 필요하다면 API에서 받아와서 할당
+    comments: item.commentCount || 0, // API에서 받은 댓글 수 사용
     views: item.viewCount,
     date: item.createdAt
       ? item.createdAt.slice(2, 10).replace(/-/g, '/') // 25/07/25

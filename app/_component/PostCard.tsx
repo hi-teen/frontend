@@ -93,7 +93,7 @@ export default function PostCard({
                   {likes}
                 </span>
               </div>
-              {/* <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 <Image
                   src="/bubble.png"
                   alt="comment"
@@ -103,7 +103,7 @@ export default function PostCard({
                 <span className={compact ? '' : 'text-xs text-[#8D8D8D]'}>
                   {comments}
                 </span>
-              </div> */}
+              </div>
               <div className="flex items-center gap-1">
                 <Image
                   src="/eye.png"

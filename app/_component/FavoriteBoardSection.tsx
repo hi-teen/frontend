@@ -70,9 +70,7 @@ export default function FavoriteBoardSection({
       {/* 게시글 목록: 개별 흰 박스, 콤팩트 모드 */}
       <div className="space-y-2">
         {(posts[selected] ?? [])
-          .slice()
-          .reverse()
-          .slice(0, 3)
+          .slice(-3)  // 뒤에서 3개 (최신 3개)
           .map((post) => (
             <PostCard
               key={post.id}

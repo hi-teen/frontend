@@ -33,14 +33,23 @@ export interface UserInfo {
 
 // 안전하게 JSON 파싱
 async function safeParseResponse(res: Response) {
+  // Response를 복제하여 body를 여러 번 읽을 수 있도록 함
+  const clonedRes = res.clone();
+  
   let data;
   let text;
+  
   try {
-    data = await res.json();
+    data = await clonedRes.json();
+    return { data, text: null };
   } catch {
-    text = await res.text();
+    try {
+      text = await clonedRes.text();
+      return { data: null, text };
+    } catch {
+      return { data: null, text: '응답을 읽을 수 없습니다.' };
+    }
   }
-  return { data, text };
 }
 
 // 이메일 중복 확인 API
