@@ -268,7 +268,8 @@ export async function fetchWithAuth(
     }
   }
 
-  return res;
+  // Response를 복제해서 반환하여 body stream already read 오류 방지
+  return res.clone();
 }
 
 export { safeParseResponse };
