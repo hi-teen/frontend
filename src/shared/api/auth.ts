@@ -1,5 +1,7 @@
 'use client';
 
+import { tokenStorage, safeJsonParse, safeStorage } from '../utils/safeStorage';
+
 export interface SchoolInfo {
   id: number;
   schoolName: string;
@@ -89,16 +91,16 @@ export async function signUpApi(form: SignupFormData): Promise<UserInfo> {
 
   if (!data || !data.data) throw new Error('서버 응답이 JSON 형식이 아님');
 
-  localStorage.setItem(
-    'signupProfile',
-    JSON.stringify({
-      email: data.data.email,
-      name: data.data.name,
-      gradeNumber: data.data.gradeNumber,
-      classNumber: data.data.classNumber,
-      school: data.data.school,
-    })
-  );
+  const profileData = JSON.stringify({
+    email: data.data.email,
+    name: data.data.name,
+    gradeNumber: data.data.gradeNumber,
+    classNumber: data.data.classNumber,
+    school: data.data.school,
+  });
+  
+  // 회원가입 임시 프로필은 전용 키에 보관 (인증 토큰과 분리)
+  safeStorage.localStorage.setItem('signupProfile', profileData);
 
   return data.data;
 }
@@ -132,12 +134,8 @@ export const loginApi = async (
     throw new Error(msg);
   }
 
-  localStorage.setItem('accessToken', data.data.accessToken);
-  localStorage.setItem('refreshToken', data.data.refreshToken);
-
-  if (typeof window !== 'undefined') {
-    document.cookie = `token=${data.data.accessToken}; path=/;`;
-  }
+  tokenStorage.setAccessToken(data.data.accessToken);
+  tokenStorage.setRefreshToken(data.data.refreshToken);
 
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
@@ -145,7 +143,7 @@ export const loginApi = async (
 
 // 토큰 재발급 API (★로그아웃 및 안내 추가)
 export const reissueToken = async (): Promise<{ accessToken: string; refreshToken: string }> => {
-  const refreshToken = localStorage.getItem('refreshToken');
+  const refreshToken = tokenStorage.getRefreshToken();
   if (!refreshToken) {
     handleTokenExpired();
     throw new Error('리프레시 토큰 없음');
@@ -168,23 +166,24 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
     );
   }
 
-  localStorage.setItem('accessToken', data.data.accessToken);
-  localStorage.setItem('refreshToken', data.data.refreshToken);
+  tokenStorage.setAccessToken(data.data.accessToken);
+  tokenStorage.setRefreshToken(data.data.refreshToken);
 
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
 // 토큰 만료/재발급 실패시 강제 로그아웃 함수
 function handleTokenExpired() {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
-  alert('로그인 세션이 만료되었습니다. 다시 로그인 해주세요.');
-  window.location.href = '/login'; // 로그인 경로 맞게 수정
+  tokenStorage.clearTokens();
+  if (typeof window !== 'undefined') {
+    alert('로그인 세션이 만료되었습니다. 다시 로그인 해주세요.');
+    window.location.href = '/login'; // 로그인 경로 맞게 수정
+  }
 }
 
 // 내 정보 조회 (members/me)
 export const fetchMe = async (): Promise<UserInfo> => {
-  let token = localStorage.getItem('accessToken');
+  let token = tokenStorage.getAccessToken();
   if (!token) {
     handleTokenExpired();
     throw new Error('토큰 없음');
@@ -231,7 +230,7 @@ export async function fetchWithAuth(
   input: RequestInfo,
   init?: RequestInit
 ): Promise<Response> {
-  let token = localStorage.getItem('accessToken');
+  let token = tokenStorage.getAccessToken();
   if (!token) {
     handleTokenExpired();
     throw new Error('토큰 없음');

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import PostCard from './PostCard';
+import { tokenStorage } from '@/shared/utils/safeStorage';
 
 interface Post {
   id: number;
@@ -55,7 +56,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
 
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      const token = localStorage.getItem('accessToken');
+      const token = tokenStorage.getAccessToken();
       fetch(
         `/api/v1/boards/search?keyword=${encodeURIComponent(keyword)}`,
         {

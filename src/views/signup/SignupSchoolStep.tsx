@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 import { useAtom } from 'jotai';
 import { signupFormAtom } from '@/shared/stores/signup';
 import SchoolConfirmModal from './SchoolConfirmModal';
@@ -10,12 +11,15 @@ import SchoolConfirmModal from './SchoolConfirmModal';
 interface School {
   id: number;
   schoolName: string;
+  schoolCode: string;
+  eduOfficeCode: string;
+  eduOfficeName: string;
+  schoolUrl: string;
 }
 
 export default function SignupSchoolStep() {
   const router = useRouter();
   const [form, setForm] = useAtom(signupFormAtom);
-
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<School[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -96,7 +100,14 @@ export default function SignupSchoolStep() {
                 onClick={() => handleSchoolClick(school)}
                 className="flex items-center gap-2 cursor-pointer px-4 py-2 hover:bg-gray-100"
               >
-                <img src="/school.png" alt="학교" width={24} height={24} />
+                <Image 
+                  src="/school.png" 
+                  alt="학교" 
+                  width={24} 
+                  height={24}
+                  className="flex-shrink-0"
+                  priority
+                />
                 <p className="text-sm font-semibold">{school.schoolName}</p>
               </div>
             ))}

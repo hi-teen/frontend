@@ -41,6 +41,7 @@ export default function HomePage() {
   const [boardPosts, setBoardPosts] = useState<Record<string, BoardItem[]>>({});
   const [selectedBoard, setSelectedBoard] = useState('FREE');
   const [hotPosts, setHotPosts] = useState<HotPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const favoriteBoardMeta = allBoards.filter((board) =>
     favoriteBoards.includes(board.key)
@@ -49,7 +50,15 @@ export default function HomePage() {
   // 게시판별 글 불러오기
   useEffect(() => {
     async function fetchAndGroupPosts() {
+      if (!accessToken) {
+        setBoardPosts({});
+        setSelectedBoard('FREE');
+        setIsLoading(false);
+        return;
+      }
+      
       try {
+        setIsLoading(true);
         const all = await fetchBoards();
         const grouped: Record<string, BoardItem[]> = {};
         favoriteBoards.forEach((key) => {
@@ -58,6 +67,9 @@ export default function HomePage() {
         setBoardPosts(grouped);
       } catch (error) {
         console.error('❌ 게시판 데이터 불러오기 실패:', error);
+        setBoardPosts({});
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchAndGroupPosts();
@@ -82,10 +94,23 @@ export default function HomePage() {
         );
       } catch (err) {
         console.error('🔥 인기 게시물 불러오기 실패:', err);
+        setHotPosts([]);
       }
     }
     fetchHotPosts();
   }, [accessToken]);
+
+  // 로딩 중일 때 기본 UI 표시
+  if (isLoading && accessToken) {
+    return (
+      <main className="pb-16 max-w-lg mx-auto">
+        <HomeHeader />
+        <TodayMealContainer />
+        <QuickMenu />
+        <div className="p-4 text-center text-gray-500">로딩 중...</div>
+      </main>
+    );
+  }
 
   return (
     <main className="pb-16 max-w-lg mx-auto">

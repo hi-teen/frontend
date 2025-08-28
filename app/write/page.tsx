@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import BoardSelectModal from '../board/_component/BoardSelectModal';
+import { tokenStorage } from '@/shared/utils/safeStorage';
 
 const boards = [
   { key: 'FREE', label: '자유게시판' },
@@ -24,9 +25,10 @@ export default function PostWritePage() {
   const [isAnonymous, setIsAnonymous] = useState(true);
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem('accessToken');
+    const token = tokenStorage.getAccessToken();
     if (!token) {
       alert('로그인이 필요합니다.');
+      router.push('/login');
       return;
     }
     if (!title || !content || !selectedBoard) {

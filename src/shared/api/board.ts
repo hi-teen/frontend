@@ -1,4 +1,5 @@
 import { fetchWithAuth } from './auth';
+import { tokenStorage } from '../utils/safeStorage';
 
 export interface BoardItem {
   id: number;
@@ -65,7 +66,7 @@ export const fetchMyPosts = async (): Promise<BoardItem[]> => {
   
 // 인기 게시글 조회 (최대 3개)
 export async function fetchPopularBoards(): Promise<any[]> {
-  const token = localStorage.getItem('accessToken');
+  const token = tokenStorage.getAccessToken();
   const res = await fetch('/api/v1/boards/popular', {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
@@ -75,7 +76,7 @@ export async function fetchPopularBoards(): Promise<any[]> {
 }
 
 export async function fetchMyRooms() {
-  const token = localStorage.getItem('accessToken');
+  const token = tokenStorage.getAccessToken();
   if (!token) throw new Error('로그인 필요');
   const res = await fetch('/api/v1/messages/rooms', {
     headers: {
