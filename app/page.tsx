@@ -51,6 +51,8 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchAndGroupPosts() {
       if (!accessToken) {
+        setBoardPosts({});
+        setSelectedBoard('FREE');
         setIsLoading(false);
         return;
       }

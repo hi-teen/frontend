@@ -40,6 +40,12 @@ body {
   outline: none;
 }
 
+/* 접근성 친화 포커스 표시 */
+:focus-visible {
+  outline: 2px solid #2563eb; /* blue-600 */
+  outline-offset: 2px;
+}
+
 /* 이미지 최대 너비 제한 */
 img {
   max-width: 100%;

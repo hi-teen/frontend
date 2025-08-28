@@ -1,6 +1,6 @@
 'use client';
 
-import { tokenStorage, safeJsonParse } from '../utils/safeStorage';
+import { tokenStorage, safeJsonParse, safeStorage } from '../utils/safeStorage';
 
 export interface SchoolInfo {
   id: number;
@@ -99,7 +99,8 @@ export async function signUpApi(form: SignupFormData): Promise<UserInfo> {
     school: data.data.school,
   });
   
-  tokenStorage.setAccessToken(profileData);
+  // 회원가입 임시 프로필은 전용 키에 보관 (인증 토큰과 분리)
+  safeStorage.localStorage.setItem('signupProfile', profileData);
 
   return data.data;
 }
@@ -172,6 +173,10 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
   tokenStorage.setAccessToken(data.data.accessToken);
   tokenStorage.setRefreshToken(data.data.refreshToken);
 
+  if (typeof window !== 'undefined') {
+    document.cookie = `token=${data.data.accessToken}; Path=/; SameSite=Lax; Secure; Max-Age=2592000`;
+  }
+
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
@@ -179,6 +184,7 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
 function handleTokenExpired() {
   tokenStorage.clearTokens();
   if (typeof window !== 'undefined') {
+    document.cookie = 'token=; Path=/; Max-Age=0; SameSite=Lax; Secure';
     alert('로그인 세션이 만료되었습니다. 다시 로그인 해주세요.');
     window.location.href = '/login'; // 로그인 경로 맞게 수정
   }

@@ -3,11 +3,11 @@ const nextConfig = {
   // 이미지 최적화 설정
   images: {
     domains: ['hiteen.site'],
-    // 로컬 이미지 경로 설정
-    unoptimized: false,
-    // 정적 이미지 경로 설정
-    dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
+    // 필요 시에만 명시; 기본값 inline 유지
+    contentDispositionType: 'inline',
+    // SVG가 꼭 필요 없다면 비활성화 권장
+    // dangerouslyAllowSVG: false,
+    // SVG 활성 시 CSP는 유지해 공격면 최소화
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
