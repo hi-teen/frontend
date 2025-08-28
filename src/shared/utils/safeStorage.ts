@@ -105,6 +105,56 @@ export const safeJsonStringify = (value: any): string | null => {
   }
 };
 
+// 쿠키 관련 헬퍼 함수들
+export const cookieStorage = {
+  getCookie: (name: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+      return null;
+    } catch {
+      return null;
+    }
+  },
+  
+  setCookie: (name: string, value: string, options: {
+    path?: string;
+    maxAge?: number;
+    sameSite?: 'Strict' | 'Lax' | 'None';
+    secure?: boolean;
+  } = {}): boolean => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const {
+        path = '/',
+        maxAge = 2592000, // 30일
+        sameSite = 'Lax',
+        secure = true
+      } = options;
+      
+      let cookie = `${name}=${value}; Path=${path}; Max-Age=${maxAge}; SameSite=${sameSite}`;
+      if (secure) cookie += '; Secure';
+      
+      document.cookie = cookie;
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  
+  removeCookie: (name: string, path: string = '/'): boolean => {
+    if (typeof window === 'undefined') return false;
+    try {
+      document.cookie = `${name}=; Path=${path}; Max-Age=0; SameSite=Lax; Secure`;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+};
+
 // 토큰 관련 헬퍼 함수들
 export const tokenStorage = {
   getAccessToken: (): string | null => {
@@ -112,7 +162,12 @@ export const tokenStorage = {
   },
   
   setAccessToken: (token: string): boolean => {
-    return safeStorage.localStorage.setItem('accessToken', token);
+    const success = safeStorage.localStorage.setItem('accessToken', token);
+    if (success) {
+      // localStorage와 쿠키 동기화
+      cookieStorage.setCookie('token', token);
+    }
+    return success;
   },
   
   getRefreshToken: (): string | null => {
@@ -126,6 +181,7 @@ export const tokenStorage = {
   clearTokens: (): void => {
     safeStorage.localStorage.removeItem('accessToken');
     safeStorage.localStorage.removeItem('refreshToken');
+    cookieStorage.removeCookie('token');
   },
   
   hasValidToken: (): boolean => {

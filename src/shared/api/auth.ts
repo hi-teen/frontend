@@ -137,10 +137,6 @@ export const loginApi = async (
   tokenStorage.setAccessToken(data.data.accessToken);
   tokenStorage.setRefreshToken(data.data.refreshToken);
 
-  if (typeof window !== 'undefined') {
-    document.cookie = `token=${data.data.accessToken}; path=/;`;
-  }
-
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
@@ -173,10 +169,6 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
   tokenStorage.setAccessToken(data.data.accessToken);
   tokenStorage.setRefreshToken(data.data.refreshToken);
 
-  if (typeof window !== 'undefined') {
-    document.cookie = `token=${data.data.accessToken}; Path=/; SameSite=Lax; Secure; Max-Age=2592000`;
-  }
-
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
@@ -184,7 +176,6 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
 function handleTokenExpired() {
   tokenStorage.clearTokens();
   if (typeof window !== 'undefined') {
-    document.cookie = 'token=; Path=/; Max-Age=0; SameSite=Lax; Secure';
     alert('로그인 세션이 만료되었습니다. 다시 로그인 해주세요.');
     window.location.href = '/login'; // 로그인 경로 맞게 수정
   }

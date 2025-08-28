@@ -9,78 +9,82 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { BoardItem } from '@/shared/api/board';
 import { fetchMe } from '@/shared/api/auth';
+import { tokenStorage } from '@/shared/utils/safeStorage';
+import { fetchMyProfile } from '@/shared/api/profile';
 
 const SearchModal = dynamic(() => import('../../../app/_component/SearchModal'), {
   ssr: false,
 }) as React.ComponentType<{ onClose: () => void }>;
 
+interface Profile {
+  id: number;
+  name: string;
+  email: string;
+  gradeNumber: number;
+  classNumber: number;
+  school: {
+    schoolName: string;
+  };
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const [openSearch, setOpenSearch] = useState(false);
   const [lovedPosts, setLovedPosts] = useState<BoardItem[]>([]);
-  const [user, setUser] = useState<UserInfo | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const handleEdit = () => router.push('/profile/edit');
-  const handleLogout = async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return router.replace('/login');
-    await fetch('/api/v1/auth/logout', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, Accept: '*/*' },
-    });
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('signupProfile');
-    router.replace('/login');
+  const handleLogout = () => {
+    tokenStorage.clearTokens();
+    router.push('/login');
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return;
-
-    fetch('/api/v1/loves/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => (r.ok ? r.json() : []))
-      .then(setLovedPosts)
-      .catch(() => setLovedPosts([]));
-
-    fetchMe()
-      .then(data => {
-        if (data) {
-          setUser({
-            ...data,
-            schoolId: (data.school as any)?.id,
-            schoolName: (data.school as any)?.schoolName,
-          });
+    const fetchProfile = async () => {
+      try {
+        const token = tokenStorage.getAccessToken();
+        if (!token) {
+          router.push('/login');
+          return;
         }
-      })
-      .catch(() => setUser(null));
-  }, []);
+
+        const data = await fetchMyProfile();
+        setProfile(data.data);
+      } catch (error) {
+        console.error('프로필 조회 실패:', error);
+        router.push('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [router]);
 
   return (
     <>
       <header className="px-4 pt-5 flex justify-between items-start bg-gray-50 sticky top-0 z-50">
         <div className="flex flex-col">
           <Link href="/"><Image src="/HiTeen.png" alt="로고" width={72} height={24} priority/></Link>
-          {user && <span className="text-xl font-bold mt-1">{user.schoolName}</span>}
+          {profile && <span className="text-xl font-bold mt-1">{profile.school.schoolName}</span>}
         </div>
       </header>
 
       <div className="px-4 pt-4 pb-20 max-w-lg mx-auto bg-gray-50 space-y-6">
         {/* 프로필 박스 */}
         <div className="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm">
-          {user ? (
+          {profile ? (
             <div className="flex items-center gap-3">
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
                 <Image src="/profile.png" alt="유저아이콘" width={60} height={60}/>
               </div>
               <div className="text-sm leading-tight">
-                <p className="font-semibold">{user.name}</p>
-                <p className="text-gray-500">{user.schoolName}</p>
-                <p className="text-gray-400 text-xs">{user.email}</p>
+                <p className="font-semibold">{profile.name}</p>
+                <p className="text-gray-500">{profile.school.schoolName}</p>
+                <p className="text-gray-400 text-xs">{profile.email}</p>
                 <p className="text-gray-400 text-xs">
-                  {user.gradeNumber}학년 {user.classNumber}반
+                  {profile.gradeNumber}학년 {profile.classNumber}반
                 </p>
               </div>
             </div>

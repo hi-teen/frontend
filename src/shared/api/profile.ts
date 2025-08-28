@@ -1,4 +1,5 @@
 import { BoardItem } from './board';
+import { tokenStorage } from '../utils/safeStorage';
 
 // 응답 파싱 및 에러 처리 공통 함수
 async function safeParseListResponse(res: Response, errorMsg: string) {
@@ -19,35 +20,71 @@ async function safeParseListResponse(res: Response, errorMsg: string) {
   return data.data;
 }
 
-// 내가 쓴 게시글
-export const fetchMyPosts = async (): Promise<BoardItem[]> => {
-  const token = localStorage.getItem('accessToken');
-  if (!token) throw new Error('토큰 없음');
+// 내 정보 조회
+export const fetchMyProfile = async () => {
+  const token = tokenStorage.getAccessToken();
+  if (!token) throw new Error('토큰이 없습니다');
 
-  const res = await fetch('/api/v1/boards/me', {
-    headers: { Authorization: `Bearer ${token}` },
+  const res = await fetch('/api/v1/members/me', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
-  return safeParseListResponse(res, '내 게시글 불러오기 실패');
+
+  if (!res.ok) throw new Error('프로필 조회 실패');
+  return res.json();
 };
 
-// 내가 쓴 댓글/대댓글
-export interface MyCommentItem {
-  commentId: number;
-  content: string;
-  boardId: number;
-  boardTitle: string;
-  createdAt: string;
-  reply?: boolean;
-}
+// 프로필 수정
+export const updateProfile = async (profileData: {
+  name: string;
+  gradeNumber: number;
+  classNumber: number;
+}) => {
+  const token = tokenStorage.getAccessToken();
+  if (!token) throw new Error('토큰이 없습니다');
 
-export const fetchMyComments = async (): Promise<MyCommentItem[]> => {
-  const token = localStorage.getItem('accessToken');
-  if (!token) throw new Error('토큰 없음');
+  const res = await fetch('/api/v1/members/me', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(profileData),
+  });
+
+  if (!res.ok) throw new Error('프로필 수정 실패');
+  return res.json();
+};
+
+// 내 글 목록 조회
+export const fetchMyPosts = async () => {
+  const token = tokenStorage.getAccessToken();
+  if (!token) throw new Error('토큰이 없습니다');
+
+  const res = await fetch('/api/v1/boards/me', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('내 글 목록 조회 실패');
+  return res.json();
+};
+
+// 내 댓글 목록 조회
+export const fetchMyComments = async () => {
+  const token = tokenStorage.getAccessToken();
+  if (!token) throw new Error('토큰이 없습니다');
 
   const res = await fetch('/api/v1/comments/me', {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
-  return safeParseListResponse(res, '내 댓글 불러오기 실패');
+
+  if (!res.ok) throw new Error('내 댓글 목록 조회 실패');
+  return res.json();
 };
 
 // 스크랩한 글
