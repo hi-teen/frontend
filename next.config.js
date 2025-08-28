@@ -3,6 +3,12 @@ const nextConfig = {
   // 이미지 최적화 설정
   images: {
     domains: ['hiteen.site'],
+    // 로컬 이미지 경로 설정
+    unoptimized: false,
+    // 정적 이미지 경로 설정
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
   // API 라우트 리라이팅
