@@ -61,7 +61,7 @@ export default function PostCard({
                     : 'text-xs text-[#8D8D8D] truncate'
                 }
               >
-                {content}
+                {content.length > 30 ? `${content.substring(0, 30)}...` : content}
               </p>
             </div>
           </div>

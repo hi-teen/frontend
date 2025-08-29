@@ -70,7 +70,7 @@ export default function BoardSelectModal({
                     selected === board.label ? 'bg-blue-100' : 'hover:bg-gray-100'
                   }`}
                   onClick={() => {
-                    onSelect(board.label);
+                    onSelect(board.key); // board.label 대신 board.key 전달
                     onClose();
                   }}
                 >

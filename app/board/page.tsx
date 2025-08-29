@@ -46,7 +46,7 @@ export default function BoardPage() {
         onClose={() => setOpen(false)}
         selected={selected}
         onSelect={(key) => {
-          setSelected(key);
+          setSelected(key); // key를 직접 사용
           setOpen(false);
         }}
       />

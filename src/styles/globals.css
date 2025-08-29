@@ -35,13 +35,31 @@ body {
   background: #a8a8a8;
 }
 
+/* 스크롤바 완전 숨기기 */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari and Opera */
+}
+
 /* 포커스 아웃라인 제거 */
 *:focus {
   outline: none;
 }
 
-/* 접근성 친화 포커스 표시 */
-:focus-visible {
+/* 입력 필드 포커스 아웃라인만 제거 (밑줄은 유지) */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+/* 접근성 친화 포커스 표시 (입력 필드 제외) */
+button:focus-visible,
+a:focus-visible {
   outline: 2px solid #2563eb; /* blue-600 */
   outline-offset: 2px;
 }

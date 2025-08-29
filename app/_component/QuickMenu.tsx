@@ -35,8 +35,13 @@ function getCurrentPeriodInfo() {
 
 function getLastPeriodEndTime(todaySubjects: string[]) {
   if (!todaySubjects || todaySubjects.length === 0) return null;
-  const lastIdx = todaySubjects.length - 1;
+  
+  // periods 배열 범위 내에서만 접근
+  const lastIdx = Math.min(todaySubjects.length - 1, periods.length - 1);
   const lastPeriod = periods[lastIdx];
+  
+  if (!lastPeriod) return null;
+  
   const todayStr = new Date().toLocaleDateString("en-CA");
   return new Date(`${todayStr}T${lastPeriod.end}:00`);
 }
@@ -125,20 +130,24 @@ export default function QuickMenu() {
     nowSubject = "수업 전";
     nextSubject = nextDayFirstSubject.subject;
     nextPeriodLabel = `${nextDayFirstSubject.period}교시`;
-    nextPeriodTime = periods[nextDayFirstSubject.period - 1].start;
+    // periods 배열 범위 체크
+    const periodIndex = nextDayFirstSubject.period - 1;
+    if (periodIndex >= 0 && periodIndex < periods.length) {
+      nextPeriodTime = periods[periodIndex].start;
+    }
   } else if (current >= 0 && todaySubjects[current]) {
     nowSubject = todaySubjects[current];
-    periodLabel = `${current + 1}교시 · ${periods[current].start}`;
+    periodLabel = `${current + 1}교시 · ${periods[current]?.start || ''}`;
     if (current < periods.length - 1 && todaySubjects[current + 1]) {
       nextSubject = todaySubjects[current + 1];
       nextPeriodLabel = `${current + 2}교시`;
-      nextPeriodTime = periods[current + 1].start;
+      nextPeriodTime = periods[current + 1]?.start || '';
     }
   } else if (current === -1 && todaySubjects.length > 0) {
     nowSubject = "수업 전";
     nextSubject = todaySubjects[0];
     nextPeriodLabel = `1교시`;
-    nextPeriodTime = periods[0].start;
+    nextPeriodTime = periods[0]?.start || '';
   }
 
   return (

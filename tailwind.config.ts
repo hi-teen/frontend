@@ -50,7 +50,21 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // 스크롤바 숨기기 유틸리티
+    function({ addUtilities }: any) {
+      const newUtilities = {
+        '.scrollbar-hide': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        },
+      };
+      addUtilities(newUtilities);
+    },
+  ],
 };
 
 export default config;

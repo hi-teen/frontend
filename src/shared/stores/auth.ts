@@ -1,8 +1,7 @@
 'use client';
 import { atom } from 'jotai';
-import { tokenStorage } from '../utils/safeStorage';
 
-// 토큰 (로그인 이후 서버가 응답한다면)
+// 토큰 (읽기/쓰기 가능)
 export const accessTokenAtom = atom<string | null>(null);
 
 // 로그인한 사용자 정보

@@ -57,8 +57,21 @@ export default function CommentSection({
   // 댓글 + 대댓글 불러오기
   useEffect(() => {
     fetchComments(boardId)
-      .then((data) => {
-        const parsed: CommentItemType[] = data.map((c: any) => ({
+      .then((response) => {
+        console.log('댓글 API 응답:', response); // 디버깅용 로그
+        
+        // API 응답 구조에 따라 data 필드에서 댓글 배열 추출
+        const commentData = response.data || response;
+        
+        // 배열인지 확인
+        if (!Array.isArray(commentData)) {
+          console.error('댓글 데이터가 배열이 아님:', commentData);
+          setComments([]);
+          onCommentCountChange(0);
+          return;
+        }
+        
+        const parsed: CommentItemType[] = commentData.map((c: any) => ({
           ...c,
           anonymousNumber: c.anonymousNumber ?? 0,
           likedByMe: c.likedByMe ?? false,
@@ -73,19 +86,31 @@ export default function CommentSection({
             idBoardWriter: r.idBoardWriter ?? false,
           })),
         }));
+        
+        console.log('파싱된 댓글:', parsed); // 디버깅용 로그
+        
         setComments(parsed);
         const totalCount =
           parsed.length +
           parsed.reduce((sum, c) => sum + (c.replies?.length ?? 0), 0);
         onCommentCountChange(totalCount);
       })
-      .catch(console.error);
+      .catch((error) => {
+        console.error('댓글 목록 조회 실패:', error);
+        setComments([]);
+        onCommentCountChange(0);
+      });
   }, [boardId, setComments, onCommentCountChange]);
 
   // 댓글 좋아요 토글
   const handleToggleCommentLike = async (commentId: number) => {
     try {
-      const data = await toggleCommentLike(commentId);
+      const response = await toggleCommentLike(commentId);
+      console.log('댓글 좋아요 토글 응답:', response); // 디버깅용 로그
+      
+      // API 응답 구조에 따라 data 필드에서 데이터 추출
+      const data = response.data || response;
+      
       setComments((prev) =>
         prev.map((c) =>
           c.commentId === commentId
@@ -93,7 +118,8 @@ export default function CommentSection({
             : c
         )
       );
-    } catch {
+    } catch (error) {
+      console.error('댓글 좋아요 실패:', error);
       alert('댓글 좋아요 실패');
     }
   };
@@ -101,7 +127,12 @@ export default function CommentSection({
   // 대댓글 좋아요 토글
   const handleToggleReplyLike = async (replyId: number) => {
     try {
-      const data = await toggleCommentLike(replyId);
+      const response = await toggleCommentLike(replyId);
+      console.log('대댓글 좋아요 토글 응답:', response); // 디버깅용 로그
+      
+      // API 응답 구조에 따라 data 필드에서 데이터 추출
+      const data = response.data || response;
+      
       setComments((prev) =>
         prev.map((c) => ({
           ...c,
@@ -112,7 +143,8 @@ export default function CommentSection({
           ) ?? [],
         }))
       );
-    } catch {
+    } catch (error) {
+      console.error('대댓글 좋아요 실패:', error);
       alert('대댓글 좋아요 실패');
     }
   };
@@ -122,7 +154,12 @@ export default function CommentSection({
     e.preventDefault();
     if (!comment.trim()) return;
     try {
-      const newC = await postComment(boardId, comment);
+      const response = await postComment(boardId, comment);
+      console.log('댓글 작성 응답:', response); // 디버깅용 로그
+      
+      // API 응답 구조에 따라 data 필드에서 댓글 데이터 추출
+      const newC = response.data || response;
+      
       const updated = [
         ...comments,
         {
@@ -141,7 +178,7 @@ export default function CommentSection({
         updated.reduce((sum, c) => sum + (c.replies?.length ?? 0), 0);
       onCommentCountChange(totalCount);
     } catch (err) {
-      console.error(err);
+      console.error('댓글 작성 실패:', err);
     }
   };
 
@@ -155,8 +192,21 @@ export default function CommentSection({
     try {
       await postReply(parentId, replyContent);
       // 전체 다시 불러오기
-      const data = await fetchComments(boardId);
-      const parsed: CommentItemType[] = data.map((c: any) => ({
+      const response = await fetchComments(boardId);
+      console.log('대댓글 작성 후 댓글 목록 응답:', response); // 디버깅용 로그
+      
+      // API 응답 구조에 따라 data 필드에서 댓글 배열 추출
+      const commentData = response.data || response;
+      
+      // 배열인지 확인
+      if (!Array.isArray(commentData)) {
+        console.error('댓글 데이터가 배열이 아님:', commentData);
+        setComments([]);
+        onCommentCountChange(0);
+        return;
+      }
+      
+      const parsed: CommentItemType[] = commentData.map((c: any) => ({
         ...c,
         anonymousNumber: c.anonymousNumber ?? 0,
         likedByMe: c.likedByMe ?? false,
@@ -179,7 +229,7 @@ export default function CommentSection({
         parsed.reduce((sum, c) => sum + (c.replies?.length ?? 0), 0);
       onCommentCountChange(totalCount);
     } catch (err) {
-      console.error(err);
+      console.error('대댓글 작성 실패:', err);
     }
   };
 
@@ -216,8 +266,18 @@ export default function CommentSection({
                   />
                 </button>
                 <span className="text-xs">{c.likeCount}</span>
-                <button onClick={() => setReplyTo(c.commentId)}>
-                  <ArrowUturnRightIcon className="w-3.5 h-3.5" />
+                <button onClick={() => {
+                  // 토글 기능: 이미 열려있으면 닫기, 닫혀있으면 열기
+                  if (replyTo === c.commentId) {
+                    setReplyTo(null);
+                    setReplyContent(''); // 입력 내용도 초기화
+                  } else {
+                    setReplyTo(c.commentId);
+                  }
+                }}>
+                  <ArrowUturnRightIcon className={`w-3.5 h-3.5 ${
+                    replyTo === c.commentId ? 'text-blue-500' : 'text-gray-400'
+                  }`} />
                 </button>
                 {c.anonymousNumber != null && (
                   <button
