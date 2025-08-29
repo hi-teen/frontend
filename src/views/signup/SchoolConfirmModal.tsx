@@ -1,13 +1,16 @@
 'use client';
 
+import Image from 'next/image';
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   schoolName?: string;
+  eduOfficeName?: string;
 }
 
-export default function SchoolConfirmModal({ isOpen, onClose, onConfirm, schoolName }: Props) {
+export default function SchoolConfirmModal({ isOpen, onClose, onConfirm, schoolName, eduOfficeName }: Props) {
   if (!isOpen) return null;
 
   return (
@@ -17,7 +20,14 @@ export default function SchoolConfirmModal({ isOpen, onClose, onConfirm, schoolN
         <p className="text-sm text-red-500 mb-4">가입 이후에는 학교를 변경할 수 없어요</p>
 
         <div className="flex items-center gap-3 mb-6">
-          <img src="/school.png" alt="학교" width={28} height={28} />
+          <Image 
+            src="/school.png" 
+            alt="학교" 
+            width={28} 
+            height={28}
+            className="flex-shrink-0"
+            priority
+          />
           <div>
             <p className="text-xs text-gray-500">
               {schoolName ? '' : '학교를 선택해주세요.'}
@@ -25,6 +35,9 @@ export default function SchoolConfirmModal({ isOpen, onClose, onConfirm, schoolN
             <p className="text-sm font-semibold">
               {schoolName ?? '학교명 없음'}
             </p>
+            {eduOfficeName && (
+              <p className="text-xs text-gray-500">({eduOfficeName})</p>
+            )}
           </div>
         </div>
 

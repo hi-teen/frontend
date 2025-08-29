@@ -108,7 +108,10 @@ export default function SignupSchoolStep() {
                   className="flex-shrink-0"
                   priority
                 />
-                <p className="text-sm font-semibold">{school.schoolName}</p>
+                <div className="flex flex-col">
+                  <p className="text-sm font-semibold">{school.schoolName}</p>
+                  <p className="text-xs text-gray-500">({school.eduOfficeName})</p>
+                </div>
               </div>
             ))}
           </div>
@@ -126,6 +129,7 @@ export default function SignupSchoolStep() {
         onClose={() => setShowModal(false)}
         onConfirm={handleConfirm}
         schoolName={selectedSchool?.schoolName}
+        eduOfficeName={selectedSchool?.eduOfficeName}
       />
     </div>
   );

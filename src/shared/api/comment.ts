@@ -91,18 +91,37 @@ export const fetchComments = async (boardId: number) => {
     return;
   }
 
-  const res = await fetch(`/api/v1/comments?boardId=${boardId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const res = await fetch(`/api/v1/comments/board/${boardId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  if (!res.ok) throw new Error('댓글 목록 조회 실패');
-  return res.json();
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.error('댓글 목록 조회 실패:', {
+        status: res.status,
+        statusText: res.statusText,
+        errorData
+      });
+      throw new Error(`댓글 목록 조회 실패 (${res.status}): ${errorData.header?.message || res.statusText}`);
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('댓글 목록 조회 중 오류:', error);
+    throw error;
+  }
 };
   
   export const postReply = async (commentId: number, content: string) => {
-    const token = localStorage.getItem('accessToken');
+    const token = tokenStorage.getAccessToken();
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+    
     const res = await fetch(
       `/api/v1/comments/${commentId}/replies`,
       {
@@ -120,8 +139,12 @@ export const fetchComments = async (boardId: number) => {
   };
   
   export async function toggleCommentLike(commentId: number) {
-    const token = localStorage.getItem('accessToken');
-    if (!token) throw new Error('토큰 없음');
+    const token = tokenStorage.getAccessToken();
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+    
     const res = await fetch(`/api/v1/comments/${commentId}/like`, {
       method: 'POST',
       headers: {

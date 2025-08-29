@@ -125,7 +125,14 @@ export default function BoardHeader({
           </div>
         </div>
         <div className="relative mt-3">
-          <div className="overflow-x-auto scrollbar-hide pr-6 pl-0" ref={scrollRef}>
+          <div 
+            className="overflow-x-auto scrollbar-hide pr-6 pl-0" 
+            ref={scrollRef}
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }}
+          >
             <div className="flex gap-2 min-w-max">
               {boards.map(({ key, name, emoji }) => (
                 <button
