@@ -68,7 +68,9 @@ export default function HomePage() {
       setAccessToken(newAccessToken);
       return true;
     } catch (error) {
-      console.error('토큰 갱신 실패:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('토큰 갱신 실패:', error instanceof Error ? error.message : String(error));
+      }
       return false;
     }
   };
@@ -105,8 +107,11 @@ export default function HomePage() {
           refreshTokenIfNeeded();
         }
       } catch (error) {
-        console.error('localStorage 읽기 오류:', error);
-        // 오류 시에도 안전한 기본값(빈 배열) 유지
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('localStorage 읽기 오류:', error instanceof Error ? error.message : String(error));
+        }
+        // 불량 데이터 정리 및 안전한 기본값 유지
+        localStorage.removeItem('favoriteBoards');
         setFavoriteBoards([]);
       }
     }
@@ -186,7 +191,9 @@ export default function HomePage() {
           setSelectedBoard(favoriteBoards[0]);
         }
       } catch (error) {
-        console.error('게시판 데이터 불러오기 실패:', error);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('게시판 데이터 불러오기 실패:', error instanceof Error ? error.message : String(error));
+        }
         // 401/403 오류 시 토큰 갱신 시도
         if (error instanceof Error && error.message.includes('401')) {
           const refreshed = await refreshTokenIfNeeded();
@@ -235,7 +242,9 @@ export default function HomePage() {
           }))
         );
       } catch (err) {
-        console.error('인기 게시물 불러오기 실패:', err);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('인기 게시물 불러오기 실패:', err instanceof Error ? err.message : String(err));
+        }
         setHotPosts([]);
       }
     }
