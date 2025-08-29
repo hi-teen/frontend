@@ -22,15 +22,6 @@ export default function FavoriteBoardSection({
   selected,
   setSelected,
 }: Props) {
-  console.log('🎭 FavoriteBoardSection 디버깅:', {
-    boards,
-    boardsLength: boards.length,
-    posts,
-    postsKeys: Object.keys(posts),
-    selected,
-    selectedPosts: posts[selected]
-  });
-
   // 서버와 클라이언트에서 항상 동일한 내용 렌더링
   const renderContent = () => {
     // 즐겨찾기한 게시판이 없는 경우
