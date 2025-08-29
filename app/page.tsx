@@ -88,8 +88,12 @@ export default function HomePage() {
             setFavoriteBoards(parsedBoards);
           }
         } else {
-          // 임시 테스트: 하드코딩된 값으로 설정
-          setFavoriteBoards(['SECRET', 'INFORMATION']);
+          // 운영: 빈 상태 유지. 필요 시 개발 환경에서만 기본값 설정
+          if (process.env.NODE_ENV !== 'production') {
+            setFavoriteBoards(['SECRET', 'INFORMATION']);
+          } else {
+            setFavoriteBoards([]);
+          }
         }
         
         // accessToken 설정
@@ -102,8 +106,8 @@ export default function HomePage() {
         }
       } catch (error) {
         console.error('localStorage 읽기 오류:', error);
-        // 오류 시에도 임시 값 설정
-        setFavoriteBoards(['SECRET', 'INFORMATION']);
+        // 오류 시에도 안전한 기본값(빈 배열) 유지
+        setFavoriteBoards([]);
       }
     }
   }, [setFavoriteBoards, setAccessToken]);
