@@ -58,8 +58,6 @@ export default function CommentSection({
   useEffect(() => {
     fetchComments(boardId)
       .then((response) => {
-        console.log('댓글 API 응답:', response); // 디버깅용 로그
-        
         // API 응답 구조에 따라 data 필드에서 댓글 배열 추출
         const commentData = response.data || response;
         
@@ -87,8 +85,6 @@ export default function CommentSection({
           })),
         }));
         
-        console.log('파싱된 댓글:', parsed); // 디버깅용 로그
-        
         setComments(parsed);
         const totalCount =
           parsed.length +
@@ -106,7 +102,6 @@ export default function CommentSection({
   const handleToggleCommentLike = async (commentId: number) => {
     try {
       const response = await toggleCommentLike(commentId);
-      console.log('댓글 좋아요 토글 응답:', response); // 디버깅용 로그
       
       // API 응답 구조에 따라 data 필드에서 데이터 추출
       const data = response.data || response;
@@ -128,7 +123,6 @@ export default function CommentSection({
   const handleToggleReplyLike = async (replyId: number) => {
     try {
       const response = await toggleCommentLike(replyId);
-      console.log('대댓글 좋아요 토글 응답:', response); // 디버깅용 로그
       
       // API 응답 구조에 따라 data 필드에서 데이터 추출
       const data = response.data || response;
@@ -155,7 +149,6 @@ export default function CommentSection({
     if (!comment.trim()) return;
     try {
       const response = await postComment(boardId, comment);
-      console.log('댓글 작성 응답:', response); // 디버깅용 로그
       
       // API 응답 구조에 따라 data 필드에서 댓글 데이터 추출
       const newC = response.data || response;
@@ -193,7 +186,6 @@ export default function CommentSection({
       await postReply(parentId, replyContent);
       // 전체 다시 불러오기
       const response = await fetchComments(boardId);
-      console.log('대댓글 작성 후 댓글 목록 응답:', response); // 디버깅용 로그
       
       // API 응답 구조에 따라 data 필드에서 댓글 배열 추출
       const commentData = response.data || response;

@@ -100,11 +100,6 @@ export const fetchComments = async (boardId: number) => {
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      console.error('댓글 목록 조회 실패:', {
-        status: res.status,
-        statusText: res.statusText,
-        errorData
-      });
       throw new Error(`댓글 목록 조회 실패 (${res.status}): ${errorData.header?.message || res.statusText}`);
     }
     

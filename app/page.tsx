@@ -53,34 +53,22 @@ export default function HomePage() {
   useEffect(() => {
     if (favoriteBoards.length > 0 && selectedBoard === 'FREE') {
       setSelectedBoard(favoriteBoards[0]);
-      console.log('🎯 selectedBoard 업데이트:', favoriteBoards[0]);
     }
   }, [favoriteBoards, selectedBoard]);
-
-  // accessToken 디버깅
-  console.log('🔑 accessToken 상태:', {
-    accessToken: !!accessToken,
-    accessTokenValue: accessToken,
-    accessTokenType: typeof accessToken,
-    accessTokenLength: accessToken?.length || 0
-  });
 
   // 토큰 자동 갱신 함수
   const refreshTokenIfNeeded = async () => {
     try {
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
-        console.log('❌ refreshToken이 없음');
         return false;
       }
 
-      console.log('🔄 토큰 자동 갱신 시도');
       const { accessToken: newAccessToken } = await reissueToken();
-      console.log('✅ 토큰 갱신 성공');
       setAccessToken(newAccessToken);
       return true;
     } catch (error) {
-      console.error('❌ 토큰 갱신 실패:', error);
+      console.error('토큰 갱신 실패:', error);
       return false;
     }
   };
@@ -94,33 +82,26 @@ export default function HomePage() {
       try {
         // favoriteBoards 설정
         const storedBoards = localStorage.getItem('favoriteBoards');
-        console.log('💾 localStorage에서 읽은 favoriteBoards:', storedBoards);
         if (storedBoards) {
           const parsedBoards = JSON.parse(storedBoards);
-          console.log('🔧 파싱된 favoriteBoards:', parsedBoards);
           if (Array.isArray(parsedBoards) && parsedBoards.length > 0) {
-            console.log('✅ favoriteBoards 설정:', parsedBoards);
             setFavoriteBoards(parsedBoards);
           }
         } else {
           // 임시 테스트: 하드코딩된 값으로 설정
-          console.log('🧪 임시 테스트: 하드코딩된 favoriteBoards 설정');
           setFavoriteBoards(['SECRET', 'INFORMATION']);
         }
         
         // accessToken 설정
         const token = localStorage.getItem('accessToken');
-        console.log('🔑 localStorage에서 읽은 accessToken:', token ? `${token.substring(0, 20)}...` : null);
         if (token) {
-          console.log('✅ accessToken 설정');
           setAccessToken(token);
         } else {
-          console.log('❌ accessToken이 localStorage에 없음 - 자동 갱신 시도');
           // accessToken이 없으면 자동으로 갱신 시도
           refreshTokenIfNeeded();
         }
       } catch (error) {
-        console.error('❌ localStorage 읽기 오류:', error);
+        console.error('localStorage 읽기 오류:', error);
         // 오류 시에도 임시 값 설정
         setFavoriteBoards(['SECRET', 'INFORMATION']);
       }
@@ -136,7 +117,6 @@ export default function HomePage() {
       const refreshToken = localStorage.getItem('refreshToken');
       
       if (token && refreshToken) {
-        console.log('⏰ 주기적 토큰 갱신 체크');
         try {
           // 토큰이 유효한지 간단히 체크 (API 호출 없이)
           const tokenPayload = JSON.parse(atob(token.split('.')[1]));
@@ -145,15 +125,14 @@ export default function HomePage() {
           
           // 10분 이내에 만료되면 갱신
           if (expiresIn < 600) {
-            console.log('⚠️ 토큰 만료 임박 - 자동 갱신');
             await refreshTokenIfNeeded();
           }
         } catch (error) {
-          console.log('🔄 토큰 상태 확인 실패 - 갱신 시도');
+          // 토큰 상태 확인 실패 시 갱신 시도
           await refreshTokenIfNeeded();
         }
       }
-    }, 5 * 60 * 1000); // 5분마다
+    }, 5 * 60 * 1000); // 5분
 
     return () => clearInterval(interval);
   }, [mounted, refreshTokenIfNeeded]);
@@ -163,10 +142,8 @@ export default function HomePage() {
     if (!mounted) return;
 
     const handleFocus = () => {
-      console.log('📱 페이지 포커스 - 토큰 상태 확인');
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        console.log('🔄 포커스 시 토큰 갱신 시도');
         refreshTokenIfNeeded();
       }
     };
@@ -178,54 +155,39 @@ export default function HomePage() {
   // 게시판별 글 불러오기
   useEffect(() => {
     async function fetchAndGroupPosts() {
-      console.log('🔍 fetchAndGroupPosts 실행:', {
-        accessToken: !!accessToken,
-        favoriteBoards,
-        favoriteBoardsLength: favoriteBoards.length
-      });
-
       if (!accessToken) {
-        console.log('❌ accessToken이 없음 - 자동 갱신 시도');
         const refreshed = await refreshTokenIfNeeded();
         if (!refreshed) {
-          console.log('❌ 토큰 갱신 실패');
           setIsLoading(false);
           return;
         }
         // 갱신된 토큰으로 다시 시도
-        console.log('🔄 토큰 갱신 후 다시 시도');
         return;
       }
       
       try {
         setIsLoading(true);
         const all = await fetchBoards();
-        console.log('📚 fetchBoards 결과:', all.length, '개');
         
         const grouped: Record<string, BoardItem[]> = {};
         favoriteBoards.forEach((key) => {
           const filtered = all.filter((item) => item.category === key);
           grouped[key] = filtered.slice(0, 3);
-          console.log(`📋 ${key} 게시판:`, filtered.length, '개 중', grouped[key].length, '개 표시');
         });
         
         setBoardPosts(grouped);
-        console.log('🎯 최종 grouped 결과:', grouped);
         
         // 즐겨찾기 게시판이 있으면 첫 번째를 선택
         if (favoriteBoards.length > 0) {
           setSelectedBoard(favoriteBoards[0]);
-          console.log('⭐ 선택된 게시판:', favoriteBoards[0]);
         }
       } catch (error) {
-        console.error('❌ 게시판 데이터 불러오기 실패:', error);
+        console.error('게시판 데이터 불러오기 실패:', error);
         // 401/403 오류 시 토큰 갱신 시도
         if (error instanceof Error && error.message.includes('401')) {
-          console.log('🔄 401 오류 - 토큰 갱신 시도');
           const refreshed = await refreshTokenIfNeeded();
           if (refreshed) {
             // 갱신된 토큰으로 다시 시도
-            console.log('🔄 토큰 갱신 후 다시 시도');
             return;
           }
         }
@@ -240,11 +202,10 @@ export default function HomePage() {
       if (accessToken) {
         fetchAndGroupPosts();
       } else {
-        console.log('⚠️ accessToken 없음 - 기본 UI만 표시');
         setIsLoading(false);
       }
     } else {
-      console.log('🚫 fetchAndGroupPosts 실행 조건 미충족:', {
+      console.log('fetchAndGroupPosts 실행 조건 미충족:', {
         mounted,
         accessToken: !!accessToken,
         favoriteBoardsLength: favoriteBoards.length
@@ -270,7 +231,7 @@ export default function HomePage() {
           }))
         );
       } catch (err) {
-        console.error('🔥 인기 게시물 불러오기 실패:', err);
+        console.error('인기 게시물 불러오기 실패:', err);
         setHotPosts([]);
       }
     }
