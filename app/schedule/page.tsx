@@ -180,7 +180,7 @@ export default function SchedulePage() {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   fontWeight: 700,
-                  fontSize: '9px',
+                  fontSize: subject && subject.length >= 7 ? '7px' : '9px',
                   letterSpacing: '-0.5px',
                 }}
                 title={subject}

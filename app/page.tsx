@@ -181,7 +181,11 @@ export default function HomePage() {
         const grouped: Record<string, BoardItem[]> = {};
         favoriteBoards.forEach((key) => {
           const filtered = all.filter((item) => item.category === key);
-          grouped[key] = filtered.slice(0, 3);
+          // 최신순으로 정렬 후 상위 3개 선택
+          const sorted = filtered.sort((a, b) => 
+            new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+          );
+          grouped[key] = sorted.slice(0, 3);
         });
         
         setBoardPosts(grouped);
