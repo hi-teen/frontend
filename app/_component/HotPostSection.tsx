@@ -49,7 +49,7 @@ export default function HotPostSection({ posts }: Props) {
           ))
         ) : (
           <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
-            <p className="text-gray-500 text-sm">인기글이 없습니다</p>
+            <p className="text-gray-500 text-sm">🔥 인기글이 없습니다</p>
           </div>
         )}
       </div>
