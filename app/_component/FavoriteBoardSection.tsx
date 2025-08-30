@@ -30,7 +30,7 @@ export default function FavoriteBoardSection({
         <div className="bg-white border border-gray-200 rounded-xl p-5 text-center">
           <p className="text-gray-500 text-xs flex items-center justify-center gap-1">
             <span className="text-base">📋</span>
-            로딩 중...
+            즐겨찾는 게시판이 없습니다
           </p>
         </div>
       );
@@ -91,7 +91,7 @@ export default function FavoriteBoardSection({
               <p className="text-gray-500 text-sm">
                 {Object.keys(posts).length === 0 
                   ? "로그인이 필요합니다" 
-                  : `"${boards.find(b => b.key === selected)?.label}" 게시판에 게시글이 없습니다`
+                  : `"${boards.find(b => b.key === selected)?.label}" 게시글이 없습니다`
                 }
               </p>
             </div>
