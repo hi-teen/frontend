@@ -5,6 +5,13 @@ const nextConfig = {
     domains: ['hiteen.site'],
     // 로컬 이미지 허용
     unoptimized: true,
+    // 로컬 이미지 경로 허용
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'hiteen.site',
+      },
+    ],
     // 필요 시에만 명시; 기본값 inline 유지
     contentDispositionType: 'inline',
     // SVG가 꼭 필요 없다면 비활성화 권장

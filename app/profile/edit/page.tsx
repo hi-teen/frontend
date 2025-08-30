@@ -184,7 +184,7 @@ export default function EditProfilePage() {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              비밀번호 <span className="text-red-500">*</span>
+              새 비밀번호 <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
@@ -196,7 +196,7 @@ export default function EditProfilePage() {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              비밀번호 확인 <span className="text-red-500">*</span>
+              새 비밀번호 확인 <span className="text-red-500">*</span>
             </label>
             <input
               type="password"

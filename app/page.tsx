@@ -82,8 +82,10 @@ export default function HomePage() {
     // localStorage에서 모든 값 읽어오기
     if (typeof window !== 'undefined') {
       try {
-        // favoriteBoards 설정
-        const storedBoards = localStorage.getItem('favoriteBoards');
+        // favoriteBoards 설정 - 사용자별로 저장
+        const userId = localStorage.getItem('userId');
+        const favoriteBoardsKey = userId ? `favoriteBoards_${userId}` : 'favoriteBoards';
+        const storedBoards = localStorage.getItem(favoriteBoardsKey);
         if (storedBoards) {
           const parsedBoards = JSON.parse(storedBoards);
           if (Array.isArray(parsedBoards) && parsedBoards.length > 0) {
@@ -212,19 +214,13 @@ export default function HomePage() {
       }
     }
 
-    if (mounted && favoriteBoards.length > 0) {
+    if (mounted) {
       // accessToken이 있으면 API 호출, 없으면 기본 UI만 표시
-      if (accessToken) {
+      if (accessToken && favoriteBoards.length > 0) {
         fetchAndGroupPosts();
       } else {
         setIsLoading(false);
       }
-    } else {
-      console.log('fetchAndGroupPosts 실행 조건 미충족:', {
-        mounted,
-        accessToken: !!accessToken,
-        favoriteBoardsLength: favoriteBoards.length
-      });
     }
   }, [mounted, accessToken, favoriteBoards, setSelectedBoard]);
 
