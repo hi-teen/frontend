@@ -66,9 +66,10 @@ export default function PostWritePage() {
     }
   };
 
-  // 한국어로만 표시, 선택되면 label만 보임
-  const handleSelectBoard = (label: string) => {
-    const boardObj = boards.find((b) => b.label === label);
+  // key로 받아서 해당하는 board 객체 찾기
+  const handleSelectBoard = (key: string) => {
+    const boardObj = boards.find((b) => b.key === key);
+    console.log('선택된 게시판:', boardObj); // 디버깅용
     setSelectedBoard(boardObj ?? null);
     setIsModalOpen(false); // 모달도 바로 닫히게!
   };
@@ -87,9 +88,25 @@ export default function PostWritePage() {
       <div className="shrink-0 px-4 pt-4">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="w-full text-left text-sm font-medium px-4 py-3 border rounded-lg text-gray-600"
+          className="w-full text-left text-sm font-medium px-4 py-3 border border-gray-300 rounded-lg transition-colors bg-white hover:border-gray-400 flex items-center justify-between"
+          style={{ borderStyle: 'solid' }}
         >
-          {selectedBoard?.label ?? '게시판 선택'}
+          <span className="text-gray-600">
+            {selectedBoard ? selectedBoard.label : '게시판 선택'}
+          </span>
+          <svg 
+            className="w-4 h-4 text-gray-400" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M19 9l-7 7-7-7" 
+            />
+          </svg>
         </button>
       </div>
 

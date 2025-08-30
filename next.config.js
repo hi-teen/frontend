@@ -3,6 +3,8 @@ const nextConfig = {
   // 이미지 최적화 설정
   images: {
     domains: ['hiteen.site'],
+    // 로컬 이미지 허용
+    unoptimized: true,
     // 필요 시에만 명시; 기본값 inline 유지
     contentDispositionType: 'inline',
     // SVG가 꼭 필요 없다면 비활성화 권장
