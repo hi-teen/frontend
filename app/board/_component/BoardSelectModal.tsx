@@ -4,7 +4,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useAtom } from 'jotai';
-import { favoriteBoardsAtom } from '@/entities/auth/model/favoriteBoardsAtom';
+import { favoriteBoardsAtom, saveFavoriteBoards } from '@/entities/auth/model/favoriteBoardsAtom';
 
 interface BoardOption {
   key: string;
@@ -36,9 +36,13 @@ export default function BoardSelectModal({
   const [favoriteBoards, setFavoriteBoards] = useAtom(favoriteBoardsAtom);
 
   const toggleFavorite = (key: string) => {
-    setFavoriteBoards((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
+    setFavoriteBoards((prev) => {
+      const newBoards = prev.includes(key) 
+        ? prev.filter((k) => k !== key) 
+        : [...prev, key];
+      saveFavoriteBoards(newBoards);
+      return newBoards;
+    });
   };
 
   return (

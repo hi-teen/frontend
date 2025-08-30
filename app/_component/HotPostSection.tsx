@@ -31,21 +31,27 @@ export default function HotPostSection({ posts }: Props) {
         <h2 className="text-xl font-bold">HOT 게시물</h2>
       </div>
       <div className="space-y-3">
-        {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            id={post.id}
-            title={post.title}
-            board={post.board}
-            content={post.content}
-            likes={post.likes}
-            comments={post.comments}
-            views={post.views}
-            date={formatDateTime(post.date)}
-            compact
-            showBoardBadge
-          />
-        ))}
+        {posts.length > 0 ? (
+          posts.map((post) => (
+            <PostCard
+              key={post.id}
+              id={post.id}
+              title={post.title}
+              board={post.board}
+              content={post.content}
+              likes={post.likes}
+              comments={post.comments}
+              views={post.views}
+              date={formatDateTime(post.date)}
+              compact
+              showBoardBadge
+            />
+          ))
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+            <p className="text-gray-500 text-sm">인기글이 없습니다</p>
+          </div>
+        )}
       </div>
     </div>
   );
