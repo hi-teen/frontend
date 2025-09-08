@@ -8,14 +8,26 @@ import {
   PlusIcon,
 } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
+import { useSchoolName } from '@/entities/auth/hooks/useSchoolName';
 import dynamic from "next/dynamic";
 import type { UserInfo, SchoolInfo } from '@/entities/auth/types';
 
 const SearchModal = dynamic(() => import('./SearchModal'), { ssr: false });
 
-async function fetchSchoolName(): Promise<string> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-  if (!token) return "";
+async function fetchSchoolName(tokenFromState?: string): Promise<string> {
+  const token = tokenFromState ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
+  if (!token) {
+    // 토큰이 아직 없으면 로컬 저장된 프로필에서 학교명 fallback
+    try {
+      const profile = typeof window !== 'undefined' ? localStorage.getItem('signupProfile') : null;
+      if (profile) {
+        const data = JSON.parse(profile);
+        if (data?.school?.schoolName) return data.school.schoolName;
+        if (data?.schoolName) return data.schoolName;
+      }
+    } catch {}
+    return "";
+  }
   try {
     const res = await fetch("/api/v1/members/me", {
       headers: {
@@ -35,11 +47,7 @@ async function fetchSchoolName(): Promise<string> {
 
 export default function HomeHeader() {
   const [openSearch, setOpenSearch] = useState(false);
-  const [schoolName, setSchoolName] = useState<string>("");
-
-  useEffect(() => {
-    fetchSchoolName().then(setSchoolName);
-  }, []);
+  const { schoolName } = useSchoolName();
 
   return (
     <>

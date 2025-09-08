@@ -96,7 +96,7 @@ export default function PostDetailPage() {
         </div>
 
         <h2 className="m-2 mt-4 text-lg font-bold mb-2">{detail.title}</h2>
-        <div className="m-2 text-sm text-gray-800 leading-relaxed mb-3">
+        <div className="m-2 text-sm text-gray-800 leading-relaxed whitespace-pre-wrap mb-3">
           {detail.content}
         </div>
 

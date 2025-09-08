@@ -1,13 +1,6 @@
 import PostCard from './PostCard';
-
-function formatDateTime(datetime?: string) {
-  if (!datetime) return '';
-  const [date, time] = datetime.split(/[ T]/);
-  if (!date || !time) return datetime;
-  const [year, month, day] = date.split('-');
-  const [hh, mm] = time.split(':');
-  return `${year.slice(2)}/${month}/${day} ${hh}:${mm}`;
-}
+import { memo } from 'react';
+import { formatDateTime } from '@/shared/utils/date';
 
 interface HotPost {
   id: number;
@@ -24,7 +17,7 @@ interface Props {
   posts: HotPost[];
 }
 
-export default function HotPostSection({ posts }: Props) {
+function HotPostSectionComponent({ posts }: Props) {
   return (
     <div className="px-4 mb-8">
       <div className="flex justify-between items-center mt-2 mb-4">
@@ -56,3 +49,6 @@ export default function HotPostSection({ posts }: Props) {
     </div>
   );
 }
+
+const HotPostSection = memo(HotPostSectionComponent);
+export default HotPostSection;
