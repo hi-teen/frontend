@@ -29,11 +29,10 @@ async function fetchSchoolName(tokenFromState?: string): Promise<string> {
     return "";
   }
   try {
-    const res = await fetch("/api/v1/members/me", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json"
-      }
+    // 서버 쿠키 기반 내부 API 경유 (SSR/CSR 동일 경로)
+    const res = await fetch("/api/internal/me", {
+      headers: { Accept: "application/json" },
+      cache: 'no-store'
     });
     if (!res.ok) return "";
     const { data } = await res.json();

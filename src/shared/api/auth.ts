@@ -137,6 +137,18 @@ export const loginApi = async (
   tokenStorage.setAccessToken(data.data.accessToken);
   tokenStorage.setRefreshToken(data.data.refreshToken);
 
+  // SSR 대비: HttpOnly 쿠키에도 저장
+  try {
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accessToken: data.data.accessToken,
+        refreshToken: data.data.refreshToken,
+      }),
+    });
+  } catch {}
+
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
@@ -169,12 +181,28 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
   tokenStorage.setAccessToken(data.data.accessToken);
   tokenStorage.setRefreshToken(data.data.refreshToken);
 
+  // SSR 대비: HttpOnly 쿠키 갱신
+  try {
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accessToken: data.data.accessToken,
+        refreshToken: data.data.refreshToken,
+      }),
+    });
+  } catch {}
+
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
 // 토큰 만료/재발급 실패시 강제 로그아웃 함수
 function handleTokenExpired() {
   tokenStorage.clearTokens();
+  // SSR 대비: HttpOnly 쿠키 제거
+  if (typeof window !== 'undefined') {
+    try { fetch('/api/auth/session', { method: 'DELETE' }); } catch {}
+  }
   if (typeof window !== 'undefined') {
     alert('로그인 세션이 만료되었습니다. 다시 로그인 해주세요.');
     window.location.href = '/login'; // 로그인 경로 맞게 수정
