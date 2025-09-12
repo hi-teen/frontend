@@ -129,7 +129,7 @@ export default function ReferralStepView() {
 
         <button
           onClick={handleNext}
-          disabled={referralCode.trim() && validationResult !== 'valid'}
+          disabled={!!referralCode.trim() && validationResult !== 'valid'}
           className="w-full py-3 bg-[#2269FF] text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
         >
           다음 단계
