@@ -11,6 +11,7 @@ export interface SignupFormData {
   email: string;
   password: string;
   passwordConfirm: string;
+  referralCode?: string;
 }
 
 export const signupAtom = atom<SignupFormData>({

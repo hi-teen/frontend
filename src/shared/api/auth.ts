@@ -20,6 +20,7 @@ export interface SignupFormData {
   schoolName?: string;
   gradeNumber: number;
   classNumber: number;
+  referralCode?: string;
 }
 
 export interface UserInfo {
@@ -297,6 +298,84 @@ export async function fetchWithAuth(
 
   // Response를 복제해서 반환하여 body stream already read 오류 방지
   return res.clone();
+}
+
+// 추천코드 유효성 검증 API
+export async function validateReferralCode(code: string): Promise<boolean> {
+  const res = await fetch(`/api/v1/members/referral/validate?code=${encodeURIComponent(code)}`, {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+  });
+
+  const { data, text } = await safeParseResponse(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.header?.message || data.message)) ||
+      text ||
+      '추천코드 확인 실패';
+    throw new Error(msg);
+  }
+
+  return data?.data === true;
+}
+
+// 내 추천코드 조회 API
+export async function fetchMyReferralCode(): Promise<string> {
+  const res = await fetchWithAuth('/api/v1/members/me/referral-code', {
+    method: 'GET',
+  });
+
+  const { data, text } = await safeParseResponse(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.header?.message || data.message)) ||
+      text ||
+      '추천코드 조회 실패';
+    throw new Error(msg);
+  }
+
+  return data?.data || '';
+}
+
+// 내가 추천한 회원 목록 조회 API
+export async function fetchReferredMembers(): Promise<{ count: number; members: { name: string }[] }> {
+  const res = await fetchWithAuth('/api/v1/members/me/referred', {
+    method: 'GET',
+  });
+
+  const { data, text } = await safeParseResponse(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.header?.message || data.message)) ||
+      text ||
+      '추천 회원 목록 조회 실패';
+    throw new Error(msg);
+  }
+
+  return data?.data || { count: 0, members: [] };
+}
+
+// 학교별 회원 수 조회 API
+export async function fetchMemberCount(schoolId: number): Promise<number> {
+  const res = await fetch(`/api/v1/members/count?schoolId=${schoolId}`, {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+  });
+
+  const { data, text } = await safeParseResponse(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.header?.message || data.message)) ||
+      text ||
+      '회원 수 조회 실패';
+    throw new Error(msg);
+  }
+
+  return data?.data || 0;
 }
 
 export { safeParseResponse };

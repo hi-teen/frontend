@@ -34,7 +34,7 @@ export default function SignupPasswordStep() {
       passwordConfirm: confirm,
     }));
 
-    router.push('/signup/step/complete');
+    router.push('/signup/step/referral');
   };
 
   return (
