@@ -2,6 +2,7 @@
 
 import PostCard from './PostCard';
 import { BoardItem } from '@/shared/api/board';
+import { memo, useMemo } from 'react';
 
 interface Board {
   key: string;
@@ -16,7 +17,7 @@ interface Props {
   setSelected: (key: string) => void;
 }
 
-export default function FavoriteBoardSection({
+function FavoriteBoardSection({
   boards,
   posts,
   selected,
@@ -69,33 +70,39 @@ export default function FavoriteBoardSection({
 
         {/* 게시글 목록: 개별 흰 박스, 콤팩트 모드 */}
         <div className="space-y-2">
-          {(posts[selected] ?? []).length > 0 ? (
-            (posts[selected] ?? [])
-              .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()) // 최신순 정렬
-              .slice(0, 3)  // 앞에서 3개 (최신 3개)
-              .map((post) => (
-                <PostCard
-                  key={post.id}
-                  id={post.id}
-                  title={post.title}
-                  content={post.content}
-                  likes={post.loveCount}
-                  comments={post.commentCount}
-                  views={post.viewCount}
-                  compact
-                />
-              ))
-          ) : (
-            // 게시글이 없을 때 메시지 표시
-            <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
-              <p className="text-gray-500 text-sm">
-                {Object.keys(posts).length === 0 
-                  ? "로그인이 필요합니다" 
-                  : `"${boards.find(b => b.key === selected)?.label}" 게시글이 없습니다`
-                }
-              </p>
-            </div>
-          )}
+          {useMemo(() => {
+            const list = posts[selected] ?? [];
+            if (list.length === 0) {
+              return (
+                <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+                  <p className="text-gray-500 text-sm">
+                    {Object.keys(posts).length === 0 
+                      ? "로그인이 필요합니다" 
+                      : `"${boards.find(b => b.key === selected)?.label}" 게시글이 없습니다`}
+                  </p>
+                </div>
+              );
+            }
+            const sorted = [...list]
+              .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+              .slice(0, 3);
+            return (
+              <>
+                {sorted.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    id={post.id}
+                    title={post.title}
+                    content={post.content}
+                    likes={post.loveCount}
+                    comments={post.commentCount}
+                    views={post.viewCount}
+                    compact
+                  />
+                ))}
+              </>
+            );
+          }, [posts, selected, boards])}
         </div>
       </>
     );
@@ -110,3 +117,5 @@ export default function FavoriteBoardSection({
     </div>
   );
 }
+
+export default memo(FavoriteBoardSection);

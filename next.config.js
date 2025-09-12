@@ -28,8 +28,8 @@ const nextConfig = {
         destination: 'https://hiteen.site/schools/:path*',
       },
       {
-        source: '/api/:path*',
-        destination: 'https://hiteen.site/api/:path*',
+        source: '/api/v1/:path*',
+        destination: 'https://hiteen.site/api/v1/:path*',
       },
     ];
   },

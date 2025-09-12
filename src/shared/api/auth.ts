@@ -20,6 +20,7 @@ export interface SignupFormData {
   schoolName?: string;
   gradeNumber: number;
   classNumber: number;
+  referralCode?: string;
 }
 
 export interface UserInfo {
@@ -137,6 +138,18 @@ export const loginApi = async (
   tokenStorage.setAccessToken(data.data.accessToken);
   tokenStorage.setRefreshToken(data.data.refreshToken);
 
+  // SSR 대비: HttpOnly 쿠키에도 저장
+  try {
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accessToken: data.data.accessToken,
+        refreshToken: data.data.refreshToken,
+      }),
+    });
+  } catch {}
+
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
@@ -169,12 +182,28 @@ export const reissueToken = async (): Promise<{ accessToken: string; refreshToke
   tokenStorage.setAccessToken(data.data.accessToken);
   tokenStorage.setRefreshToken(data.data.refreshToken);
 
+  // SSR 대비: HttpOnly 쿠키 갱신
+  try {
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accessToken: data.data.accessToken,
+        refreshToken: data.data.refreshToken,
+      }),
+    });
+  } catch {}
+
   return { accessToken: data.data.accessToken, refreshToken: data.data.refreshToken };
 };
 
 // 토큰 만료/재발급 실패시 강제 로그아웃 함수
 function handleTokenExpired() {
   tokenStorage.clearTokens();
+  // SSR 대비: HttpOnly 쿠키 제거
+  if (typeof window !== 'undefined') {
+    try { fetch('/api/auth/session', { method: 'DELETE' }); } catch {}
+  }
   if (typeof window !== 'undefined') {
     alert('로그인 세션이 만료되었습니다. 다시 로그인 해주세요.');
     window.location.href = '/login'; // 로그인 경로 맞게 수정
@@ -269,6 +298,84 @@ export async function fetchWithAuth(
 
   // Response를 복제해서 반환하여 body stream already read 오류 방지
   return res.clone();
+}
+
+// 추천코드 유효성 검증 API
+export async function validateReferralCode(code: string): Promise<boolean> {
+  const res = await fetch(`/api/v1/members/referral/validate?code=${encodeURIComponent(code)}`, {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+  });
+
+  const { data, text } = await safeParseResponse(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.header?.message || data.message)) ||
+      text ||
+      '추천코드 확인 실패';
+    throw new Error(msg);
+  }
+
+  return data?.data === true;
+}
+
+// 내 추천코드 조회 API
+export async function fetchMyReferralCode(): Promise<string> {
+  const res = await fetchWithAuth('/api/v1/members/me/referral-code', {
+    method: 'GET',
+  });
+
+  const { data, text } = await safeParseResponse(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.header?.message || data.message)) ||
+      text ||
+      '추천코드 조회 실패';
+    throw new Error(msg);
+  }
+
+  return data?.data || '';
+}
+
+// 내가 추천한 회원 목록 조회 API
+export async function fetchReferredMembers(): Promise<{ count: number; members: { name: string }[] }> {
+  const res = await fetchWithAuth('/api/v1/members/me/referred', {
+    method: 'GET',
+  });
+
+  const { data, text } = await safeParseResponse(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.header?.message || data.message)) ||
+      text ||
+      '추천 회원 목록 조회 실패';
+    throw new Error(msg);
+  }
+
+  return data?.data || { count: 0, members: [] };
+}
+
+// 학교별 회원 수 조회 API
+export async function fetchMemberCount(schoolId: number): Promise<number> {
+  const res = await fetch(`/api/v1/members/count?schoolId=${schoolId}`, {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+  });
+
+  const { data, text } = await safeParseResponse(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.header?.message || data.message)) ||
+      text ||
+      '회원 수 조회 실패';
+    throw new Error(msg);
+  }
+
+  return data?.data || 0;
 }
 
 export { safeParseResponse };
