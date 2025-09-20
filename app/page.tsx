@@ -13,6 +13,7 @@ import TodayMealContainer from './_component/TodayMealContainer';
 import QuickMenu from './_component/QuickMenu';
 import FavoriteBoardSection from './_component/FavoriteBoardSection';
 import HotPostSection from './_component/HotPostSection';
+import PopupAd from './_component/PopupAd';
 
 const allBoards = [
   { key: 'FREE', label: '자유게시판', emoji: '😊' },
@@ -277,17 +278,20 @@ export default function HomePage() {
   }
 
   return (
-    <main className="pb-16 max-w-lg mx-auto">
-      <HomeHeader />
-      <TodayMealContainer />
-      <QuickMenu />
-      <FavoriteBoardSection
-        boards={favoriteBoardMeta}
-        posts={boardPosts}
-        selected={selectedBoard}
-        setSelected={setSelectedBoard}
-      />
-      <HotPostSection posts={hotPosts} />
-    </main>
+    <>
+      <main className="pb-16 max-w-lg mx-auto">
+        <HomeHeader />
+        <TodayMealContainer />
+        <QuickMenu />
+        <FavoriteBoardSection
+          boards={favoriteBoardMeta}
+          posts={boardPosts}
+          selected={selectedBoard}
+          setSelected={setSelectedBoard}
+        />
+        <HotPostSection posts={hotPosts} />
+      </main>
+      <PopupAd />
+    </>
   );
 }
